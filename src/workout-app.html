@@ -19,20 +19,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="my-icons.html">
+<link rel="import" href="workout-icons.html">
 
-<link rel="lazy-import" href="my-view1.html">
-<link rel="lazy-import" href="my-view2.html">
-<link rel="lazy-import" href="my-view3.html">
-<link rel="lazy-import" href="my-view404.html">
+<link rel="lazy-import" href="workout-home.html">
+<link rel="lazy-import" href="workout-plans.html">
+<link rel="lazy-import" href="workout-stats.html">
+<link rel="lazy-import" href="workout-404.html">
 
-<dom-module id="my-app">
+<dom-module id="workout-app">
   <template>
     <style>
       :host {
-        --app-primary-color: #4285f4;
-        --app-secondary-color: black;
+        --pc-900: #2B2546;
+        --pc-800: #433B65;
+        --pc-300: #978BB9;
+        --text-100: white;
+        --hl-400: #54BDFF;
 
         display: block;
       }
@@ -43,11 +47,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       app-header {
         color: #fff;
-        background-color: var(--app-primary-color);
+        background-color: var(--pc-800);
       }
 
       app-header paper-icon-button {
+        color: var(--hl-400);
         --paper-icon-button-ink-color: white;
+      }
+
+      #drawer {
+        --app-drawer-content-container: {
+          background: var(--pc-900);
+        };
       }
 
       .drawer-list {
@@ -58,13 +69,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         display: block;
         padding: 0 16px;
         text-decoration: none;
-        color: var(--app-secondary-color);
+        color: var(--text-100);
         line-height: 40px;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
+      .drawer-list a iron-icon {
+        margin-right: 10px;
+        color: var(--pc-300);
+        --iron-icon-width: 22px;
+        --iron-icon-height: 22px;
       }
 
       .drawer-list a.iron-selected {
-        color: black;
+        color: var(--hl-400);
+        background: var(--pc-800);
         font-weight: bold;
+      }
+
+      .drawer-list a.iron-selected iron-icon {
+        color: var(--hl-400);
       }
     </style>
 
@@ -78,11 +103,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-drawer-layout fullbleed narrow="{{narrow}}">
       <!-- Drawer content -->
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
-        <app-toolbar>Menu</app-toolbar>
+        <app-toolbar>Workout PWA</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="[[rootPath]]view1">View One</a>
-          <a name="view2" href="[[rootPath]]view2">View Two</a>
-          <a name="view3" href="[[rootPath]]view3">View Three</a>
+          <a name="home" href="[[rootPath]]home"><iron-icon icon="wi:home"></iron-icon> HOME</a>
+          <a name="plans" href="[[rootPath]]plans"><iron-icon icon="wi:clipboard-text"></iron-icon> WORKOUT PLANS</a>
+          <a name="stats" href="[[rootPath]]stats"><iron-icon icon="wi:chart-line"></iron-icon> STATS</a>
+          <a name="exercises" href="[[rootPath]]exercises"><iron-icon icon="wi:dumbbell"></iron-icon> EXERCISES</a>
+          <a name="settings" href="[[rootPath]]settings"><iron-icon icon="wi:tune"></iron-icon> SETTINGS</a>
         </iron-selector>
       </app-drawer>
 
@@ -91,28 +118,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <app-header slot="header" condenses reveals effects="waterfall">
           <app-toolbar>
-            <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
-            <div main-title>My App</div>
+            <paper-icon-button icon="wi:menu" drawer-toggle></paper-icon-button>
+            <div main-title>[[title]]</div>
           </app-toolbar>
         </app-header>
 
         <iron-pages
             selected="[[page]]"
             attr-for-selected="name"
-            fallback-selection="view404"
+            fallback-selection="404"
             role="main">
-          <my-view1 name="view1"></my-view1>
-          <my-view2 name="view2"></my-view2>
-          <my-view3 name="view3"></my-view3>
-          <my-view404 name="view404"></my-view404>
+          <workout-home active="[[_eq(page, 'home')]]" name="home"></workout-home>
+          <workout-plans active="[[_eq(page, 'plans')]]" name="plans"></workout-plans>
+          <workout-stats active="[[_eq(page, 'stats')]]" name="stats"></workout-stats>
+          <workout-exercises active="[[_eq(page, 'exercises')]]" name="exercises"></workout-exercises>
+          <workout-settings active="[[_eq(page, 'settings')]]" name="settings"></workout-settings>
+          <workout-404 active="[[_eq(page, '404')]]" name="404"></workout-404>
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
   </template>
 
   <script>
-    class MyApp extends Polymer.Element {
-      static get is() { return 'my-app'; }
+    class WorkoutApp extends Polymer.Element {
+      static get is() { return 'workout-app'; }
 
       static get properties() {
         return {
@@ -121,11 +150,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             reflectToAttribute: true,
             observer: '_pageChanged',
           },
+
           routeData: Object,
+
           subroute: String,
+
           // This shouldn't be neccessary, but the Analyzer isn't picking up
           // Polymer.Element#rootPath
           rootPath: String,
+
+          defaultTitle: {
+            type: String,
+            value: 'Workout PWA'
+          }
         };
       }
 
@@ -135,10 +172,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         ];
       }
 
+      ready() {
+        super.ready();
+        this.addEventListener('view-active', e => {
+          this.title = e.detail.title || this.defaultTitle;
+        });
+      }
+
       _routePageChanged(page) {
         // If no page was found in the route data, page will be an empty string.
         // Deault to 'view1' in that case.
-        this.page = page || 'view1';
+        this.page = page || 'home';
 
         // Close a non-persistent drawer when the page & route are changed.
         if (!this.$.drawer.persistent) {
@@ -148,19 +192,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _pageChanged(page) {
         // Load page import on demand. Show 404 page if fails
-        var resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
+        var resolvedPageUrl = this.resolveUrl('workout-' + page + '.html');
         Polymer.importHref(
             resolvedPageUrl,
-            null,
+            this._pageWasChanged,  
             this._showPage404.bind(this),
             true);
       }
 
       _showPage404() {
-        this.page = 'view404';
+        this.page = '404';
+      }
+
+      _eq(val1, val2) {
+        return val1 === val2;
       }
     }
 
-    window.customElements.define(MyApp.is, MyApp);
+    window.customElements.define(WorkoutApp.is, WorkoutApp);
   </script>
 </dom-module>

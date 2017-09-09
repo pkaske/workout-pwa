@@ -1,0 +1,26 @@
+<script>
+ViewMixin = function(superClass) {
+  return class extends superClass {
+    static get properties() {
+      return {
+        title: {
+          type: String,
+          value: null
+        },
+
+        active: {
+          type: Boolean,
+          value: false,
+          observer: '_activeChanged'
+        }
+      };
+    }
+
+    _activeChanged(state) {
+      if (state) {
+        this.dispatchEvent(new CustomEvent('view-active', { detail: { title: this.title }, bubbles: true, composed: true }));
+      }
+    }
+  }
+}
+</script>

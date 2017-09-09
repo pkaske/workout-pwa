@@ -1,11 +1,13 @@
 {
   "entrypoint": "index.html",
-  "shell": "src/my-app.html",
+  "shell": "src/workout-app.html",
   "fragments": [
-    "src/my-view1.html",
-    "src/my-view2.html",
-    "src/my-view3.html",
-    "src/my-view404.html"
+    "src/workout-home.html",
+    "src/workout-plans.html",
+    "src/workout-stats.html",
+    "src/workout-exercises.html",
+    "src/workout-settings.html",
+    "src/workout-404.html"
   ],
   "sources": [
     "src/**/*",
