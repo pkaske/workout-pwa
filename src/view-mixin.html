@@ -1,6 +1,9 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
+
 <script>
 ViewMixin = function(superClass) {
-  return class extends superClass {
+  return class extends Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], superClass) {
     static get properties() {
       return {
         title: {
@@ -10,14 +13,33 @@ ViewMixin = function(superClass) {
 
         active: {
           type: Boolean,
-          value: false,
-          observer: '_activeChanged'
+          value: false
+        },
+
+        language: {
+          type: String,
+          value: 'en'
+        },
+
+        resources: {
+          type: Object
         }
       };
     }
 
-    _activeChanged(state) {
-      if (state) {
+    static get observers() {
+      return [
+        '_signalActive(active, resources)'
+      ];
+    }
+
+    ready() {
+      super.ready();
+      this.__ = this.localize;
+    }
+
+    _signalActive(state) {
+      if (state && this.resources) {
         this.dispatchEvent(new CustomEvent('view-active', { detail: { title: this.title }, bubbles: true, composed: true }));
       }
     }

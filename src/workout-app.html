@@ -17,6 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
@@ -28,12 +29,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="lazy-import" href="workout-stats.html">
 <link rel="lazy-import" href="workout-404.html">
 
+<script src="scripts/exercise-handler.js"></script>
+
 <dom-module id="workout-app">
   <template>
     <style>
       :host {
         --pc-900: #2B2546;
+        --pc-850: #3E3560;
         --pc-800: #433B65;
+        --pc-600: #54497C;
         --pc-300: #978BB9;
         --text-100: white;
         --hl-400: #54BDFF;
@@ -103,7 +108,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-drawer-layout fullbleed narrow="{{narrow}}">
       <!-- Drawer content -->
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
-        <app-toolbar>Workout PWA</app-toolbar>
+        <app-toolbar>[[localize('appName')]]</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
           <a name="home" href="[[rootPath]]home"><iron-icon icon="wi:home"></iron-icon> HOME</a>
           <a name="plans" href="[[rootPath]]plans"><iron-icon icon="wi:clipboard-text"></iron-icon> WORKOUT PLANS</a>
@@ -119,7 +124,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <app-header slot="header" condenses reveals effects="waterfall">
           <app-toolbar>
             <paper-icon-button icon="wi:menu" drawer-toggle></paper-icon-button>
-            <div main-title>[[title]]</div>
+            <div main-title>[[localize(title)]]</div>
           </app-toolbar>
         </app-header>
 
@@ -128,19 +133,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             attr-for-selected="name"
             fallback-selection="404"
             role="main">
-          <workout-home active="[[_eq(page, 'home')]]" name="home"></workout-home>
-          <workout-plans active="[[_eq(page, 'plans')]]" name="plans"></workout-plans>
-          <workout-stats active="[[_eq(page, 'stats')]]" name="stats"></workout-stats>
-          <workout-exercises active="[[_eq(page, 'exercises')]]" name="exercises"></workout-exercises>
-          <workout-settings active="[[_eq(page, 'settings')]]" name="settings"></workout-settings>
-          <workout-404 active="[[_eq(page, '404')]]" name="404"></workout-404>
+          <workout-home active="[[_eq(page, 'home')]]" language="[[language]]" resources="[[resources]]" name="home"></workout-home>
+          <workout-plans active="[[_eq(page, 'plans')]]" language="[[language]]" resources="[[resources]]" name="plans"></workout-plans>
+          <workout-stats active="[[_eq(page, 'stats')]]" language="[[language]]" resources="[[resources]]" name="stats"></workout-stats>
+          <workout-exercises
+            active="[[_eq(page, 'exercises')]]"
+            language="[[language]]"
+            resources="[[resources]]"
+            name="exercises"
+            exercises="[[_exercises]]"></workout-exercises>
+          <workout-settings active="[[_eq(page, 'settings')]]" language="[[language]]" resources="[[resources]]" name="settings"></workout-settings>
+          <workout-404 active="[[_eq(page, '404')]]" language="[[language]]" resources="[[resources]]" name="404"></workout-404>
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
   </template>
 
   <script>
-    class WorkoutApp extends Polymer.Element {
+    class WorkoutApp extends Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element) {
       static get is() { return 'workout-app'; }
 
       static get properties() {
@@ -151,18 +161,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             observer: '_pageChanged',
           },
 
+          language: {
+            type: String,
+            value: 'en'
+          },
+
           routeData: Object,
 
           subroute: String,
 
           // This shouldn't be neccessary, but the Analyzer isn't picking up
           // Polymer.Element#rootPath
-          rootPath: String,
-
-          defaultTitle: {
-            type: String,
-            value: 'Workout PWA'
-          }
+          rootPath: String
         };
       }
 
@@ -172,17 +182,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         ];
       }
 
-      ready() {
-        super.ready();
-        this.addEventListener('view-active', e => {
-          this.title = e.detail.title || this.defaultTitle;
-        });
+      connectedCallback() {
+        super.connectedCallback();
+
+        // Setup DB
+        this._setupPouchdb();
+
+        // Load translation file
+        this.loadResources(this.resolveUrl('locales.json'));
       }
 
       _routePageChanged(page) {
         // If no page was found in the route data, page will be an empty string.
         // Deault to 'view1' in that case.
         this.page = page || 'home';
+        this.title = 'title-' + page;
 
         // Close a non-persistent drawer when the page & route are changed.
         if (!this.$.drawer.persistent) {
@@ -198,6 +212,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this._pageWasChanged,  
             this._showPage404.bind(this),
             true);
+      }
+
+      _setupPouchdb() {
+        window.App = {
+          Exercises: new ExerciseHandler()
+        };
+
+        document.addEventListener('exercises-changed', e => {
+          this._exercises = e.detail.docs;
+        });
       }
 
       _showPage404() {

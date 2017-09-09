@@ -1,0 +1,16 @@
+{
+  "en": {
+    "app-name": "Workout PWA",
+    "title-home": "READY TO WORKOUT?",
+    "title-exercises": "EXERSICES",
+    "exercise-name": "Name",
+    "create-exercise": "Create Exercise"
+  },
+  "de": {
+    "app-name": "Workout PWA",
+    "title-home": "BEREIT FÜR DEIN WORKOUT?",
+    "title-exercises": "EXERSICES",
+    "exercise-name": "Name",
+    "create-exercise": "Übung anlegen"
+  }
+}

@@ -14,31 +14,62 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <dom-module id="shared-styles">
   <template>
     <style>
-      .card {
-        margin: 24px;
-        padding: 16px;
-        color: #757575;
-        border-radius: 5px;
-        background-color: #fff;
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-      }
-
-      .circle {
-        display: inline-block;
-        width: 64px;
-        height: 64px;
-        text-align: center;
-        color: #555;
-        border-radius: 50%;
-        background: #ddd;
-        font-size: 30px;
-        line-height: 64px;
-      }
-
       h1 {
         margin: 16px 0;
-        color: #212121;
+        color: var(--text-100);
         font-size: 22px;
+      }
+
+      label {
+        font-family: 'Roboto Condensed';
+        padding: 10px;
+        display: block;
+        background: var(--pc-800);
+        border-bottom: solid 1px var(--pc-850);
+      }
+
+      .margin-bottom-10 {
+        margin-bottom: 10px;
+      }
+
+      .margin-bottom-20 {
+        margin-bottom: 20px;
+      }
+
+      paper-input {
+        --paper-input-container-input-color: var(--text-100);
+        --paper-input-container-underline: {
+          display: none;
+        };
+        --paper-input-container-underline-focus: {
+          display: none;
+        };
+        --paper-input-container-underline-disabled: {
+          display: none;
+        };
+        --paper-input-container: {
+          background: var(--pc-600);
+          padding: 10px 10px 6px 10px;
+          box-sizing: border-box;
+        };
+        --paper-input-container-label: {
+          color: var(--pc-300);
+        };
+
+        @apply --layout-flex;
+      }
+
+      button[type="submit"] {
+        background: var(--pc-800);
+        color: var(--hl-400);
+        border: none;
+        height: 42px;
+        padding: 0 10px;
+      }
+
+      .horizontal {
+        @apply --layout-horizontal;
+        @apply --layout-center;
       }
     </style>
   </template>

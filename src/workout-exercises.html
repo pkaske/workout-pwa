@@ -9,6 +9,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="w-sortable.html">
 <link rel="import" href="view-mixin.html">
 <link rel="import" href="shared-styles.html">
 
@@ -17,16 +21,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="shared-styles">
       :host {
         display: block;
-
         padding: 10px;
+      }
+
+      .item {
+        padding: 10px;
+        color: var(--text-100);
+        background: var(--pc-600);
+        border-top: solid 1px var(--pc-850);
       }
     </style>
 
-    <div class="card">
-      <h1>EXERCISES</h1>
-      <p>Ea duis bonorum nec, falli paulo aliquid ei eum.</p>
-      <p>Id nam odio natum malorum, tibique copiosae expetenda mel ea.Detracto suavitate repudiandae no eum. Id adhuc minim soluta nam.Id nam odio natum malorum, tibique copiosae expetenda mel ea.</p>
-    </div>
+    <label>[[__('create-exercise')]]</label>
+    <iron-form id="form" class="margin-bottom-10">
+      <form>
+        <div class="horizontal">
+          <paper-input name="name" label="[[__('exercise-name')]]" no-label-float required></paper-input>
+          <button type="submit"><iron-icon icon="wi:plus"></iron-icon></button>
+        </div>
+      </form>
+    </iron-form>
+
+    <w-sortable selector=".item" long-press on-items-rearranged="_exercisesRearranged">
+      <template is="dom-repeat" items="[[exercises]]" as="ex">
+        <div class="item" data-id$="[[ex._id]]">[[ex.name]]</div>
+      </template>
+    </w-sortable>
+    <p>Ea duis bonorum nec, falli paulo aliquid ei eum.</p>
+    <p>Id nam odio natum malorum, tibique copiosae expetenda mel ea.Detracto suavitate repudiandae no eum. Id adhuc minim soluta nam.Id nam odio natum malorum, tibique copiosae expetenda mel ea.</p>
   </template>
 
   <script>
@@ -35,8 +57,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       static get properties() {
         return {
-          title: { type: String, value: 'EXERCISES' }
+          title: { type: String, value: 'EXERCISES' },
+
+          exercises: {
+            type: Array,
+            value: function() {
+              return [];
+            }
+          },
+
+          // Id of the current exercise document that is edited.
+          _exId: {
+            type: String,
+            value: null
+          },
+
+          _exData: {
+            type: Object,
+            value: function() { return {}; }
+          }
         };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+
+        this.$.form.addEventListener('iron-form-presubmit',e => {
+          e.preventDefault();
+          window.App.Exercises.create(this.$.form.serializeForm()).then(() => this.$.form.reset())
+        });
+      }
+
+      _exercisesRearranged(e) {
+        e.detail.newOrder.map(item => {
+
+        });
       }
     }
 

@@ -1,0 +1,315 @@
+<!--
+@license
+Copyright (c) 2017 Peter Kaske
+License: MIT
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/polymer/lib/utils/flattened-nodes-observer.html">
+
+<!--
+# w-sortable
+
+Sort items with tracking gestures.
+
+## Example
+```html
+<w-sortable>
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+</w-sortable>
+```
+
+## Styling
+Name | Type | Default | Description
+---|---|---
+--w-sortable | mixin || Styling on :host.
+
+-->
+<dom-module id="w-sortable">
+  <template>
+    <style>
+      :host {
+        display: block;
+
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+
+        @apply --w-sortable;
+      }
+    </style>
+
+    <slot></slot>
+  </template>
+</dom-module>
+<script>
+  class WSortable extends Polymer.GestureEventListeners(Polymer.Element) {
+    static get is() { return 'w-sortable'; }
+
+    static get properties() {
+      return {
+        selector: {
+          type: String,
+          value: 'div'
+        },
+  
+        handle: {
+          type: String,
+          value: null
+        },
+  
+        /**
+         * Use long press gesture to activate dragging.
+         */
+        longPress: {
+          type: Boolean,
+          value: false
+        },
+  
+        sorting: {
+          type: Boolean,
+          value: false,
+          readOnly: true,
+          notify: true,
+          reflectToAttribute: true
+        },
+  
+        _sortables: {
+          type: Array,
+          value: function() {
+            return [];
+          }
+        }
+      };
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      Polymer.RenderStatus.afterNextRender(this, function() {
+        if (this.longPress) {
+          Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
+          Polymer.Gestures.setTouchAction(this, 'auto');
+          Polymer.Gestures.addListener(this, 'down', e => this._pointerDown(e));
+          Polymer.Gestures.addListener(this, 'up', e => this._pointerUp(e));
+          this.addEventListener('touchmove', e => this._touchmove(e));
+        }
+      });
+    }
+
+    _pointerDown(e) {
+      this._longPressTarget = this._closest(Polymer.dom(e).rootTarget, this.selector, true);
+      if (this._longPressTarget) {
+        this._startX = e.detail.x;
+        this._startY = e.detail.y;
+        this._longPressJob = setTimeout(() => {
+          Polymer.Gestures.setTouchAction(this, 'none');
+          this._setupTarget(e);
+          this._longPressTarget.setAttribute('long-pressed', '');
+        }, 200);
+      }
+    }
+
+    _pointerUp() {
+      this._cancelLongPress();
+      setTimeout(() => {
+        this._setSorting(false);
+      });
+    }
+
+    _setupTarget(e) {
+      this._target = this._closest(e.path[0], this.selector, true);
+      if (this._target) {
+        this._rect = this._target.getBoundingClientRect();
+        this._registerSortableElements();
+        this._setSorting(true);
+        this._translate3d('0px', this._dy + 'px', '0px', this._target);
+      }
+    }
+
+    _touchmove(e) {
+      if (this.sorting) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    }
+
+    _onTrack(e) {
+      switch (e.detail.state) {
+        case 'track':
+          if (!this.sorting && this._longPressJob !== false && (Math.abs(e.detail.dy) > 10 || Math.abs(e.detail.dx) > 10)) {
+            this._cancelLongPress();
+            return;
+          }
+
+          if (this.sorting) {
+            this._dy = e.detail.dy;
+            this._direction = this._dy < 0 ? 1 : -1;
+            this._translate3d('0px', this._dy + 'px', '0px', this._target);
+            this._moveSiblings();
+          }
+          break;
+        case 'end':
+          if (this.sorting) {
+            const result = this._calcOverlap();
+            this._target.style.zIndex = '';
+            this._dy = 0;
+            this._translate3d('0px', '0px', '0px', this._target);
+            this._resetSortables();
+            this._setSorting(false);
+            this.dispatchEvent(new CustomEvent('items-rearranged', { detail: result, bubbles: true, composed: true }));
+          }
+          break;
+      }
+    }
+
+    _cancelLongPress() {
+      clearTimeout(this._longPressJob);
+      this._longPressJob = false;
+      this._longPressTarget.removeAttribute('long-pressed');
+      Polymer.Gestures.setTouchAction(this, 'auto');
+    }
+
+    _moveSiblings() {
+      const targetTop = this._rect.top + this._dy;
+      const targetHeight = this._rect.height;
+      const distanceThreshold = this._rect.height * 0.5;
+
+      const isTrackingDown = () => this._dy > 0;
+      const itemsBeforeTarget = () => {
+        const idx = this._sortables.findIndex(item => item.el === this._target);
+        return this._sortables.slice(0, idx);
+      }
+
+      const itemsAfterTarget = () => {
+        const idx = this._sortables.findIndex(item => item.el === this._target);
+        return this._sortables.slice(idx + 1);
+      }
+
+      if (isTrackingDown()) {
+        const items = itemsAfterTarget();
+  
+        for (let i = 0, li = items.length; i < li; ++i) {
+          const item = items[i];
+          if (item.el !== this._target) {
+  
+            if (targetTop + distanceThreshold > item.rect.top) {
+              this._translate3d('0px', -targetHeight + 'px', '0px', item.el);
+            }
+            
+            if (targetTop + distanceThreshold < item.rect.top) {
+              this._translate3d('0px', '0px', '0px', item.el);
+            }
+          }
+        }
+      } else {
+        const items = itemsBeforeTarget();
+  
+        for (let i = 0, li = items.length; i < li; ++i) {
+          const item = items[i];
+          if (item.el !== this._target) {
+  
+            if (targetTop - distanceThreshold > item.rect.top) {
+              this._translate3d('0px', '0px', '0px', item.el);
+            }
+            
+            if (targetTop - distanceThreshold < item.rect.top) {
+              this._translate3d('0px', targetHeight + 'px', '0px', item.el);
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * Finds the next nearest sibling and returns the distance.
+     * @return {Object} Distance and item of the next nearest sibling.
+     */
+    _calcOverlap() {
+      let oldIndex = 0;
+      const targetTop = this._target.getBoundingClientRect().top;
+      const list = [];
+      for (let i = 0, li = this._sortables.length; i < li; ++i) {
+        if (this._sortables[i].el === this._target) {
+          oldIndex = i;
+        }
+        list[this._sortables[i].el.getBoundingClientRect().top] = this._sortables[i].el;
+      }
+      const newOrder = list.filter(el => el !== undefined);
+      const targetIdx = newOrder.findIndex(el => el === this._target);
+
+      return {
+        oldIndex: oldIndex,
+        newIndex: targetIdx,
+        newOrder: newOrder,
+        siblingBefore: targetIdx > 0 ? newOrder[targetIdx - 1] : null,
+        siblingAfter: targetIdx < newOrder.length - 1 ? newOrder[targetIdx + 1] : null,
+        target: this._target
+      };
+    }
+
+    _registerSortableElements() {
+      this._sortables = [];
+      let sortables = Polymer.FlattenedNodesObserver.getFlattenedNodes(this).filter(n => {
+        return n.nodeType === Node.ELEMENT_NODE && this._closest(n, this.selector);
+      });
+      for (let i = 0, li = sortables.length; i < li; ++i) {
+        const el = sortables[i];
+        el.style.position = el.style.position || 'relative';
+        el.style.transition = 'transform 300ms ease-in-out';
+        el.style.zIndex = '0';
+        this._sortables.push({
+          el: el,
+          rect: el.getBoundingClientRect()
+        });
+      }
+
+      this._target.style.zIndex = '9999';
+      this._target.style.transition = '';
+    }
+
+    _resetSortables() {
+      for (var i = 0, li = this._sortables.length; i < li; ++i) {
+        var item = this._sortables[i];
+        item.el.style.transition = '';
+        item.el.style.transform = '';
+        item.el.style.zIndex = '';
+      }
+
+      this._target = null;
+    }
+
+    _closest(node, selector, pierce) {
+      if (!node || !node.tagName || typeof selector !== 'string') {
+        return;
+      }
+
+      const matches = node.matches || node.msMatchesSelector || node.oMatchesSelector;
+      while (node) {
+        if (matches.call(node, selector)) {
+          return node;
+        }
+        if (pierce && !node.parentElement) {
+          node = Polymer.dom(node).getOwnerRoot();
+          if (node) {
+            node = node.host;
+          }
+        } else {
+          node = node.parentElement;
+        }
+      }
+    }
+
+    _translate3d(x, y, z, node) {
+      node = (node || this);
+      const transformText = 'translate3d(' + x + ',' + y + ',' + z + ')';
+      node.style.webkitTransform = transformText;
+      node.style.transform = transformText;
+    }
+  }
+
+  window.customElements.define(WSortable.is, WSortable);
+</script>
