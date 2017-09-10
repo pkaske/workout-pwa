@@ -186,6 +186,11 @@ Name | Type | Default | Description
       });
     }
 
+    resetAnimation() {
+      this.$.content.style.transition = 'none';
+      this._translate3d('0px', '0px', '0px', this.$.content);
+    }
+
     _handleTrack(e) {
       switch (e.detail.state) {
         case 'start':

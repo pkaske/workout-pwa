@@ -27,6 +27,14 @@ class ExerciseHandler {
     });
   }
 
+  deleteById(id) {
+    return this._exercisedDb.get(id)
+      .then(doc => this._exercisedDb.remove(doc))
+      .then(() => this.all()).then(docs => {
+        this._fire('exercises-changed', docs);
+      });
+  }
+
   _changeFeed() {
     this._exercisedDb.changes({
       since: 'now',

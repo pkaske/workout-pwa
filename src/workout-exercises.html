@@ -21,11 +21,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <template>
     <style include="shared-styles">
       :host {
-        display: block;
-        padding: 10px;
+        @apply --layout-vertical;
       }
 
       .item {
+        opacity: 1;
+
         --w-swipe-action-content: {
           color: var(--text-100);
           border-top: solid 1px var(--pc-850);
@@ -66,6 +67,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         };
       }
 
+      .item.animated {
+        transition: transform 200ms ease-in-out, opacity 180ms ease-in-out;
+      }
+
       .item:first-of-type {
         --w-swipe-action-content: {
           color: var(--text-100);
@@ -84,9 +89,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: var(--pc-900);
         margin-right: 5px;
       }
+
+      .empty {
+        @apply --layout-flex;
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+        text-align: center;
+        color: var(--pc-300);
+        --iron-icon-width: 64px;
+        --iron-icon-height: 64px;
+      }
     </style>
 
-    <label>[[__('create-exercise')]]</label>
+    <label class="margin-top-10">[[__('create-exercise')]]</label>
     <iron-form id="form" class="margin-bottom-10">
       <form>
         <div class="horizontal">
@@ -98,7 +113,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <template is="dom-repeat" items="[[exercises]]" as="ex">
-        <w-swipe-action threshold="150" class="item" data-id$="[[ex._id]]">
+        <w-swipe-action threshold="150" class="item" data-id$="[[ex._id]]" on-action-triggered="_actionTriggered">
           <div slot="left-action">
             <div>[[__('delete-exercise')]]</div>
           </div>
@@ -110,6 +125,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </div>
         </w-swipe-action>
       </template>
+    </div>
+
+    <div class="empty" hidden$="[[_hasExercises(exercises.length)]]">
+      <div>
+        <iron-icon icon="wi:dumbbell"></iron-icon>
+        <p>[[__('no-exercises-jet')]]</p>
+      </div>
     </div>
   </template>
 
@@ -126,17 +148,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: function() {
               return [];
             }
-          },
-
-          // Id of the current exercise document that is edited.
-          _exId: {
-            type: String,
-            value: null
-          },
-
-          _exData: {
-            type: Object,
-            value: function() { return {}; }
           }
         };
       }
@@ -144,10 +155,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       connectedCallback() {
         super.connectedCallback();
 
+        this._boundFinishRemove = this._finishRemove.bind(this);
+
         this.$.form.addEventListener('iron-form-presubmit',e => {
           e.preventDefault();
           window.App.Exercises.create(this.$.form.serializeForm()).then(() => this.$.form.reset())
         });
+      }
+
+      _actionTriggered(e) {
+        const type = e.detail.type === 'left' ? 'remove' : 'edit';
+        const item = e.target;
+        if (type === 'remove') {
+          this._triggerRemove(item);
+        } 
+      }
+      
+      _triggerRemove(item) {
+        item.classList.add('animated');
+        item.addEventListener('transitionend', this._boundFinishRemove);
+        item.style.transform = 'translateX(100%)';
+        item.style.opacity = 0;
+      }
+
+      _finishRemove(e) {
+        const item = e.target;
+        const id = item.getAttribute('data-id');
+        item.removeEventListener('transitionend', this._boundFinishRemove);
+        window.App.Exercises.deleteById(id)
+          .then(() => {
+            item.resetAnimation();
+            item.classList.remove('animated');
+            item.style.transform = 'none';
+            item.style.opacity = 1;
+          });
+      }
+
+      _hasExercises() {
+        return this.exercises.length > 0;
       }
     }
 

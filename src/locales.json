@@ -2,19 +2,21 @@
   "en": {
     "app-name": "Workout PWA",
     "title-home": "READY TO WORKOUT?",
-    "title-exercises": "EXERSICES",
+    "title-exercises": "EXERCISES",
     "exercise-name": "Name",
     "create-exercise": "Create Exercise",
     "delete-exercise": "DELETE",
-    "edit-exercise": "EDIT"
+    "edit-exercise": "EDIT",
+    "no-exercises-jet": "Create your first exercise"
   },
   "de": {
     "app-name": "Workout PWA",
     "title-home": "BEREIT FÜR DEIN WORKOUT?",
-    "title-exercises": "EXERSICES",
+    "title-exercises": "ÜBUNGEN",
     "exercise-name": "Name",
     "create-exercise": "Übung anlegen",
     "delete-exercise": "LÖSCHEN",
-    "edit-exercise": "BEARBEITEN"
+    "edit-exercise": "BEARBEITEN",
+    "no-exercises-jet": "Füge deine erste Übung hinzu"
   }
 }
