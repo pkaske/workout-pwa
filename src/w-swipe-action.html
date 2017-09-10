@@ -1,0 +1,279 @@
+<!--
+@license
+Copyright (c) 2017 Peter Kaske
+License: MIT
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<!--
+# w-swipe-action
+
+Trigger actions by swiping an element to the left or right.
+
+## Example
+```html
+<w-swipe-action></w-swipe-action>
+```
+
+## Styling
+Name | Type | Default | Description
+---|---|---
+--w-swipe-action | mixin || Styling on :host.
+--w-swipe-action-swiping | mixin || Applied on the element while swiping.
+--w-swipe-action-content | mixin || Applied on the content.
+--w-swipe-action-left | mixin || Applied on the left action bar.
+--w-swipe-action-right | mixin || Applied on the right action bar.
+--w-swipe-action-active-left | mixin || Applied on the left action bar when threshold was reached.
+--w-swipe-action-active-right | mixin || Applied on the right action bar when threshold was reached.
+--w-swipe-action-content-left | mixin || Applied on the content of the left action.
+--w-swipe-action-content-right | mixin || Applied on the content of the right action.
+--w-swipe-action-content-active-left | mixin || Applied on the content of the left action when threshold was reached.
+--w-swipe-action-content-active-right | mixin || Applied on the content of the right action when threshold was reached.
+
+@demo
+-->
+<dom-module id="w-swipe-action">
+  <template>
+    <style>
+    :host {
+      display: block;
+
+      @apply --w-swipe-action;
+    }
+
+    :host([swiping]) {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+
+      @apply --w-swipe-action-swiping;
+    }
+
+    .wrap {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #content {
+      position: relative;
+      z-index: 1;
+      background: #FFF;
+
+      @apply --w-swipe-action-content;
+    }
+
+    #actionLeft,
+    #actionRight {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    #actionLeft {
+      @apply --w-swipe-action-left;
+    }
+
+    #actionRight {
+      @apply --w-swipe-action-right;
+    }
+
+    #actionLeft.active {
+      @apply --w-swipe-action-active-left;
+    }
+
+    #actionRight.active {
+      @apply --w-swipe-action-active-right;
+    }
+
+    #actionLeft ::slotted(*) {
+      width: 40px;
+      @apply --layout-fit;
+      @apply --layout-horizontal;
+      @apply --layout-center-center;
+
+      @apply --w-swipe-action-content-left;
+    }
+
+    #actionRight ::slotted(*) {
+      width: 40px;
+      @apply --layout-fit;
+      @apply --layout-horizontal;
+      @apply --layout-center-center;
+      right: 0;
+      left: initial;
+
+      @apply --w-swipe-action-content-right;
+    }
+
+    #actionLeft.active ::slotted(*) {
+      @apply --w-swipe-action-content-active-left;
+    }
+
+    #actionRight.active ::slotted(*) {
+      @apply --w-swipe-action-content-active-right;
+    }
+    </style>
+
+    <div class="wrap">
+      <div id="actionLeft">
+        <div><slot name="left-action"></slot></div>
+      </div>
+      <div id="actionRight">
+        <div><slot name="right-action"></slot></div>
+      </div>
+      <div id="content" on-track="_handleTrack">
+        <slot></slot>
+      </div>
+    </div>
+  </template>
+</dom-module>
+<script>
+  class WSwipeAction extends Polymer.Element {
+    static get is() { return 'w-swipe-action'; }
+
+    /**
+     * Fired when the user starts to swipe the element.
+     * This event is cancelable.
+     *
+     * @event swipe-start null
+     */
+
+    /**
+     * Fired when action-triggered.
+     *
+     * @event action-triggered {{type: String}}
+     *     type: Indicates what action was triggered ('left' or 'right').
+     */
+
+    static get properties() {
+      return {
+        /**
+         * Number of pixels the element must be swiped to trigger an action.
+         */
+        threshold: {
+          type: Number,
+          value: 90
+        },
+  
+        /**
+         * True if the content is currently swiped.
+         */
+        swiping: {
+          type: Boolean,
+          value: false,
+          readOnly: true,
+          notify: true,
+          reflectToAttribute: true
+        }
+      };
+    }
+
+    constructor() {
+      super();
+      this._boundSnapBackEnd = this._snapBackEnd.bind(this);
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      Polymer.RenderStatus.afterNextRender(this, function() {
+        Polymer.Gestures.setTouchAction(this.$.content, 'pan-y');
+      });
+    }
+
+    _handleTrack(e) {
+      switch (e.detail.state) {
+        case 'start':
+          const customEv = new CustomEvent('swipe-start', { detail: null, bubbles: true, composed: true, cancelable: true })
+          this.dispatchEvent(customEv);
+          if (customEv.defaultPrevented) {
+            return;
+          }
+          this._width = this.$.content.getBoundingClientRect().width;
+          this._setSwiping(true);
+          this._prepAction(e.detail.dx);
+          this._translate3d(e.detail.dx + 'px', '0px', '0px', this.$.content);
+          this.setAttribute('swiping', '');
+          break;
+        case 'track':
+          if (this.swiping) {
+            this._translate3d(e.detail.dx + 'px', '0px', '0px', this.$.content);
+            this._prepAction(e.detail.dx);
+            var target = e.detail.dx > 0 ? this.$.actionLeft : this.$.actionRight;
+            if (this._testTreshold(e.detail.dx)) {
+              target.classList.add('active');
+            } else {
+              target.classList.remove('active');
+            }
+          }
+          break;
+        case 'end':
+          if (this.swiping) {
+            this.$.content.style.transition = 'transform 300ms ease-in-out';
+            this._setSwiping(false);
+            if (this._hasHitTreshold(e.detail.dx)) {
+              this.$.content.addEventListener('transitionend', this._boundSnapBackEnd);
+              this._translate3d('0px', '0px', '0px', this.$.content);
+            }
+          }
+          break;
+      }
+    }
+
+    _prepAction(dx) {
+      if (dx > 0) {
+        this.$.actionLeft.style.zIndex = '0';
+        this.$.actionRight.style.zIndex = '-1';
+      } else {
+        this.$.actionLeft.style.zIndex = '-1';
+        this.$.actionRight.style.zIndex = '0';
+      }
+    }
+
+    _snapBackEnd() {
+      this.$.content.style.transition = '';
+      this.$.actionLeft.classList.remove('active');
+      this.$.actionRight.classList.remove('active');
+      this.$.content.removeEventListener('transitionend', this._boundSnapBackEnd);
+    }
+
+    _maxTranslate(dx) {
+      this._width = this.$.content.getBoundingClientRect().width;
+
+      if (dx > 0) {
+        return Math.min(this._width / 2, dx) + 'px';
+      }
+
+      return Math.max(-1 * this._width / 2, dx) + 'px';
+    }
+
+    _testTreshold(dx) {
+      return Math.abs(dx) > this.threshold;
+    }
+
+    _hasHitTreshold(dx) {
+      if (this._testTreshold(dx)) {
+        const customEv = new CustomEvent('action-triggered', { detail: { type: dx > 0 ? 'left' : 'right' }, bubbles: true, composed: true, cancelable: true });
+        this.dispatchEvent(customEv);
+        if (customEv.defaultPrevented) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    _translate3d(x, y, z, node) {
+      node = (node || this);
+      const transformText = 'translate3d(' + x + ',' + y + ',' + z + ')';
+      node.style.webkitTransform = transformText;
+      node.style.transform = transformText;
+    }
+  }
+
+  window.customElements.define(WSwipeAction.is, WSwipeAction);
+</script>

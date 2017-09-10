@@ -4,13 +4,17 @@
     "title-home": "READY TO WORKOUT?",
     "title-exercises": "EXERSICES",
     "exercise-name": "Name",
-    "create-exercise": "Create Exercise"
+    "create-exercise": "Create Exercise",
+    "delete-exercise": "DELETE",
+    "edit-exercise": "EDIT"
   },
   "de": {
     "app-name": "Workout PWA",
     "title-home": "BEREIT FÜR DEIN WORKOUT?",
     "title-exercises": "EXERSICES",
     "exercise-name": "Name",
-    "create-exercise": "Übung anlegen"
+    "create-exercise": "Übung anlegen",
+    "delete-exercise": "LÖSCHEN",
+    "edit-exercise": "BEARBEITEN"
   }
 }

@@ -90,18 +90,16 @@ Name | Type | Default | Description
     connectedCallback() {
       super.connectedCallback();
       Polymer.RenderStatus.afterNextRender(this, function() {
-        if (this.longPress) {
-          Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
-          Polymer.Gestures.setTouchAction(this, 'auto');
-          Polymer.Gestures.addListener(this, 'down', e => this._pointerDown(e));
-          Polymer.Gestures.addListener(this, 'up', e => this._pointerUp(e));
-          this.addEventListener('touchmove', e => this._touchmove(e));
-        }
+        Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
+        Polymer.Gestures.setTouchAction(this, 'auto');
+        Polymer.Gestures.addListener(this, 'down', e => this._pointerDown(e));
+        Polymer.Gestures.addListener(this, 'up', e => this._pointerUp(e));
+        this.addEventListener('touchmove', e => this._touchmove(e));
       });
     }
 
     _pointerDown(e) {
-      this._longPressTarget = this._closest(Polymer.dom(e).rootTarget, this.selector, true);
+      this._longPressTarget = this._closest(e.path[0], this.handle || this.selector, true);
       if (this._longPressTarget) {
         this._startX = e.detail.x;
         this._startY = e.detail.y;
@@ -109,7 +107,7 @@ Name | Type | Default | Description
           Polymer.Gestures.setTouchAction(this, 'none');
           this._setupTarget(e);
           this._longPressTarget.setAttribute('long-pressed', '');
-        }, 200);
+        }, this.longPress ? 200 : 0);
       }
     }
 
@@ -169,7 +167,9 @@ Name | Type | Default | Description
     _cancelLongPress() {
       clearTimeout(this._longPressJob);
       this._longPressJob = false;
-      this._longPressTarget.removeAttribute('long-pressed');
+      if (this._longPressTarget) {
+        this._longPressTarget.removeAttribute('long-pressed');
+      }
       Polymer.Gestures.setTouchAction(this, 'auto');
     }
 
