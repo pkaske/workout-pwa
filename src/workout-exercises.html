@@ -66,6 +66,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         };
       }
 
+      .item:first-of-type {
+        --w-swipe-action-content: {
+          color: var(--text-100);
+          border-top: none;
+          padding: 10px;
+          background: var(--pc-600)
+        };
+      }
+
       .item .content {
         @apply --layout-horizontal;
         @apply --layout-center;
@@ -87,9 +96,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </form>
     </iron-form>
 
-    <w-sortable id="list" selector=".item" handle=".handle" on-items-rearranged="_exercisesRearranged">
+    <div>
       <template is="dom-repeat" items="[[exercises]]" as="ex">
-        <w-swipe-action threshold="150" class="item" data-id$="[[ex._id]]" on-swipe-start="_checkIfSwipeEnabled">
+        <w-swipe-action threshold="150" class="item" data-id$="[[ex._id]]">
           <div slot="left-action">
             <div>[[__('delete-exercise')]]</div>
           </div>
@@ -97,14 +106,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <div>[[__('edit-exercise')]]</div>
           </div>
           <div class="content">
-            <iron-icon class="handle" icon="wi:drag-vertical"></iron-icon>
             <div>[[ex.name]]</div>
           </div>
         </w-swipe-action>
       </template>
-    </w-sortable>
-    <p>Ea duis bonorum nec, falli paulo aliquid ei eum.</p>
-    <p>Id nam odio natum malorum, tibique copiosae expetenda mel ea.Detracto suavitate repudiandae no eum. Id adhuc minim soluta nam.Id nam odio natum malorum, tibique copiosae expetenda mel ea.</p>
+    </div>
   </template>
 
   <script>
@@ -142,18 +148,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           e.preventDefault();
           window.App.Exercises.create(this.$.form.serializeForm()).then(() => this.$.form.reset())
         });
-      }
-
-      _exercisesRearranged(e) {
-        e.detail.newOrder.map(item => {
-
-        });
-      }
-
-      _checkIfSwipeEnabled(e) {
-        if (this.$.list.sorting) {
-          e.preventDefault();
-        }
       }
     }
 

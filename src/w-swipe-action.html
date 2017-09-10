@@ -134,7 +134,7 @@ Name | Type | Default | Description
   </template>
 </dom-module>
 <script>
-  class WSwipeAction extends Polymer.Element {
+  class WSwipeAction extends Polymer.GestureEventListeners(Polymer.Element) {
     static get is() { return 'w-swipe-action'; }
 
     /**
