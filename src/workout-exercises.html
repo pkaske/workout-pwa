@@ -12,8 +12,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/iron-form/iron-form.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="w-sortable.html">
 <link rel="import" href="w-swipe-action.html">
+<link rel="import" href="w-slide-up-panel.html">
+<link rel="import" href="helpers-mixin.html">
 <link rel="import" href="view-mixin.html">
 <link rel="import" href="shared-styles.html">
 
@@ -112,7 +115,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </iron-form>
 
     <div>
-      <template is="dom-repeat" items="[[exercises]]" as="ex">
+      <template id="exerciseList" is="dom-repeat" items="[[exercises]]" as="ex">
         <w-swipe-action threshold="150" class="item" data-id$="[[ex._id]]" on-action-triggered="_actionTriggered">
           <div slot="left-action">
             <div>[[__('delete-exercise')]]</div>
@@ -133,10 +136,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <p>[[__('no-exercises-jet')]]</p>
       </div>
     </div>
+
+    <w-slide-up-panel full id="editExercisePanel">
+      <h1 slot="header">[[__('edit-exercise-header')]]</h1>
+      <div>
+        <label>[[__('edit-exercise-name')]]</label>
+        <iron-form id="editForm" class="margin-bottom-10">
+          <form>
+            <div class="horizontal">
+              <input type="hidden" name="_id" value="[[_selExercise._id]]">
+              <input type="hidden" name="_rev" value="[[_selExercise._rev]]">
+              <paper-input name="name" value="[[_selExercise.name]]" label="[[__('exercise-name')]]" no-label-float required></paper-input>
+            </div>
+          </form>
+        </iron-form>
+      </div>
+      <div slot="actions">
+        <button danger dismiss-panel>[[__('cancel')]]</button>
+        <button confirm on-tap="_submitEditForm">[[__('save')]]</button>
+      </div>
+    </w-slide-up-panel>
   </template>
 
   <script>
-    class WorkoutExercises extends ViewMixin(Polymer.Element) {
+    class WorkoutExercises extends Polymer.GestureEventListeners(HelpersMixin(ViewMixin(Polymer.Element))) {
       static get is() { return 'workout-exercises'; }
 
       static get properties() {
@@ -148,6 +171,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: function() {
               return [];
             }
+          },
+
+          _selExercise: {
+            type: Object
           }
         };
       }
@@ -157,18 +184,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         this._boundFinishRemove = this._finishRemove.bind(this);
 
-        this.$.form.addEventListener('iron-form-presubmit',e => {
+        this.$.form.addEventListener('iron-form-presubmit', e => {
           e.preventDefault();
           window.App.Exercises.create(this.$.form.serializeForm()).then(() => this.$.form.reset())
         });
+
+        this.$.editForm.addEventListener('iron-form-presubmit', e => {
+          e.preventDefault();
+          window.App.Exercises.edit(this.$.editForm.serializeForm()).then(() => this.$.editExercisePanel.hide());
+        });
+
+        this._submitOnEnter();
       }
 
       _actionTriggered(e) {
         const type = e.detail.type === 'left' ? 'remove' : 'edit';
         const item = e.target;
-        if (type === 'remove') {
+        if (type === 'edit') {
+          this._triggerEdit(item);
+        } else {
           this._triggerRemove(item);
-        } 
+        }
+      }
+
+      _triggerEdit(item) {
+        this._selExercise = this.$.exerciseList.itemForElement(item);
+        const input = this.$.editForm.querySelector('paper-input');
+        input.focus();
+        this.$.editExercisePanel.show();
       }
       
       _triggerRemove(item) {
@@ -193,6 +236,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _hasExercises() {
         return this.exercises.length > 0;
+      }
+
+      _submitEditForm() {
+        this.$.editForm.submit();
       }
     }
 

@@ -2,7 +2,7 @@
 <link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
 
 <script>
-ViewMixin = function(superClass) {
+ViewMixin = Polymer.dedupingMixin(function(superClass) {
   return class extends Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], superClass) {
     static get properties() {
       return {
@@ -44,5 +44,5 @@ ViewMixin = function(superClass) {
       }
     }
   }
-}
+});
 </script>

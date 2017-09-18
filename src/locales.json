@@ -7,7 +7,11 @@
     "create-exercise": "Create Exercise",
     "delete-exercise": "DELETE",
     "edit-exercise": "EDIT",
-    "no-exercises-jet": "Create your first exercise"
+    "no-exercises-jet": "Create your first exercise",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit-exercise-name": "Enter new name",
+    "edit-exercise-header": "Edit Exercise"
   },
   "de": {
     "app-name": "Workout PWA",
@@ -17,6 +21,10 @@
     "create-exercise": "Übung anlegen",
     "delete-exercise": "LÖSCHEN",
     "edit-exercise": "BEARBEITEN",
-    "no-exercises-jet": "Füge deine erste Übung hinzu"
+    "no-exercises-jet": "Füge deine erste Übung hinzu",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "edit-exercise-name": "Neuer Name",
+    "edit-exercise-header": "Übung bearbeiten"
   }
 }

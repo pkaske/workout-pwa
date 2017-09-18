@@ -43,6 +43,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --text-100: white;
         --hl-400: #54BDFF;
         --red-900: #C11F1F;
+        --green-700: #30B87F;
 
         display: block;
       }
@@ -102,6 +103,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       iron-pages > * {
         height: 100%;
       }
+
+      #appHeader.lower-z {
+        z-index: 0 !important;
+      }
     </style>
 
     <app-location route="{{route}}" url-space-regex="^[[rootPath]]"></app-location>
@@ -127,7 +132,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <!-- Main content -->
       <app-header-layout has-scrolling-region>
 
-        <app-header slot="header" condenses reveals effects="waterfall">
+        <app-header id="appHeader" slot="header" condenses reveals effects="waterfall">
           <app-toolbar>
             <paper-icon-button icon="wi:menu" drawer-toggle></paper-icon-button>
             <div main-title>[[localize(title)]]</div>
@@ -196,6 +201,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // Load translation file
         this.loadResources(this.resolveUrl('locales.json'));
+
+        this._setupGuiStuff();
       }
 
       _routePageChanged(page) {
@@ -227,6 +234,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         document.addEventListener('exercises-changed', e => {
           this._exercises = e.detail.docs;
+        });
+      }
+
+      _setupGuiStuff() {
+        this.addEventListener('swipe-panel-open', () => {
+          this.$.drawer.swipeOpen = false;
+          this.$.appHeader.classList.add('lower-z');
+        });
+
+        this.addEventListener('swipe-panel-closed', () => {
+          this.$.drawer.swipeOpen = true;
+          this.$.appHeader.classList.remove('lower-z');
         });
       }
 

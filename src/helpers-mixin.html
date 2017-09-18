@@ -1,0 +1,47 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<script>
+HelpersMixin = Polymer.dedupingMixin(superClass =>  {
+  return class extends superClass {
+    _submitOnEnter() {
+      this.shadowRoot.querySelectorAll('iron-form').forEach(form => {
+        form.addEventListener('keypress', e => {
+          if (e.keyCode === 13) {
+            form.submit();
+          }
+        });
+      });
+    }
+
+    /**
+     * Find closest parent node matching the selector.
+     * First node that's checked is `node` itself.
+     *
+     * @param  {HTMLElement} node         Node to start on.
+     * @param  {String} selector          Query selector for the test.
+     * @param  {Boolean} pierce           If true, will travel through shadow dom boundaries.
+     * @return {HTMLELement|undefined}    The closest matching parent node or undefined
+     */
+     _closest(node, selector, pierce) {
+      if (!node || !node.tagName || typeof selector !== 'string') {
+        return;
+      }
+
+      const matches = node.matches || node.msMatchesSelector || node.oMatchesSelector;
+      while (node) {
+        if (matches.call(node, selector)) {
+          return node;
+        }
+        if (pierce && !node.parentElement) {
+          node = node.getRootNode();
+          if (node) {
+            node = node.host;
+          }
+        } else {
+          node = node.parentElement;
+        }
+      }
+    }
+  }
+});
+</script>

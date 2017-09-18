@@ -18,6 +18,10 @@ class ExerciseHandler {
     return this._exercisedDb.post(exercise);
   }
 
+  edit(doc) {
+    return this._exercisedDb.put(doc);
+  }
+
   all() {
     return this._exercisedDb.find({
       selector: {

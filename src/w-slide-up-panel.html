@@ -1,0 +1,162 @@
+<!--
+@license
+Copyright (c) 2017 Peter Kaske
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="helpers-mixin.html">
+
+<!--
+# w-slide-up-panel
+
+Displays a panel that slide up from the bottom.
+
+## Example
+```html
+<w-slide-up-panel></w-slide-up-panel>
+```
+
+-->
+<dom-module id="w-slide-up-panel">
+  <template>
+    <style>
+      :host {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 100%;
+        pointer-events: none;
+        transform: translateY(100%);
+        opacity: 0;
+        z-index: 1;
+        will-change: transform, opacity;
+        -webkit-transition: transform 300ms ease-in-out, opacity 0ms ease-in-out 300ms;
+        -moz-transition: transform 300ms ease-in-out, opacity 0ms ease-in-out 300ms;
+        transition: transform 300ms ease-in-out, opacity 0ms ease-in-out 300ms;
+        background: var(--pc-600);
+      }
+
+      :host([full]) {
+        height: 100%;
+      }
+
+      :host([visible]) {
+        -webkit-transition: transform 300ms ease-in-out, opacity 100ms ease-in-out;
+        -moz-transition: transform 300ms ease-in-out, opacity 100ms ease-in-out;
+        transition: transform 300ms ease-in-out, opacity 100ms ease-in-out;
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .wrap {
+        @apply --layout-vertical;
+        height: 100%
+      }
+
+      .content {
+        overflow-y: auto;
+        background: var(--pc-800);
+        @apply --layout-flex;
+      }
+
+      .actions ::slotted(*) {
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+      }
+
+      header {
+        height: 64px;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-justified;
+        padding-left: 10px;
+      }
+
+      header button {
+        border-style: none;
+        background: transparent;
+        color: var(--white);
+        border-left: solid 1px var(--white);
+        height: 64px;
+        width: 64px;
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+      }
+
+      header ::slotted(*) {
+        @apply --layout-flex;
+      }
+    </style>
+
+    <div class="wrap">
+      <header>
+        <slot name="header"></slot>
+        <button on-tap="hide"><iron-icon icon="wi:close"></iron-icon></button>
+      </header>
+      <div class="content">
+        <slot></slot>
+      </div>
+      <div class="actions" on-tap="_actionsTapped">
+        <slot name="actions"></slot>
+      </div>
+    </div>
+  </template>
+  <script>
+    class WSlideUpPanel extends Polymer.GestureEventListeners(HelpersMixin(Polymer.Element)) {
+      static get is() { return 'w-slide-up-panel'; }
+
+      static get properties() {
+        return {
+          visible: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this._boundDismissOnOutsideClick = this._dismissOnOutsideClick.bind(this);
+        this._boundOnClosed = this._onClosed.bind(this);
+      }
+
+      show() {
+        this.visible = true;
+        document.addEventListener('click', this._boundDismissOnOutsideClick);
+        this.dispatchEvent(new CustomEvent('swipe-panel-open', { detail: null, bubbles: true, composed: true }));
+      }
+      
+      hide() {
+        if (this.visible) {
+          this.addEventListener('transitionend', this._boundOnClosed);
+          this.visible = false;
+        }
+      }
+      
+      _dismissOnOutsideClick(e) {
+        if (!this._closest(e.composedPath()[0], this.tagName, true)) {
+          this.hide();
+          document.removeEventListener('click', this._boundDismissOnOutsideClick);
+        }
+      }
+      
+      _onClosed(e) {
+        this.removeEventListener('transitionend', this._boundOnClosed);
+        this.dispatchEvent(new CustomEvent('swipe-panel-closed', { detail: null, bubbles: true, composed: true }));
+      }
+
+      _actionsTapped(e) {
+        if (this._closest(e.composedPath()[0], '[dismiss-panel]', true)) {
+          this.hide();
+        }
+      }
+    }
+
+    window.customElements.define(WSlideUpPanel.is, WSlideUpPanel);
+  </script>
+</dom-module>
