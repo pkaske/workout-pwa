@@ -59,7 +59,7 @@ Displays a panel that slide up from the bottom.
 
       .content {
         overflow-y: auto;
-        background: var(--pc-800);
+        background: var(--pc-900);
         @apply --layout-flex;
       }
 
@@ -70,6 +70,7 @@ Displays a panel that slide up from the bottom.
 
       header {
         height: 64px;
+        padding: 0 10px;
         @apply --layout-horizontal;
         @apply --layout-center;
         @apply --layout-justified;
@@ -97,57 +98,82 @@ Displays a panel that slide up from the bottom.
     </div>
   </template>
   <script>
-    class WSlideUpPanel extends Polymer.GestureEventListeners(HelpersMixin(Polymer.Element)) {
-      static get is() { return 'w-slide-up-panel'; }
+    (function() {
+      let panelCounter = 0;
 
-      static get properties() {
-        return {
-          visible: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
+      class WSlideUpPanel extends Polymer.GestureEventListeners(HelpersMixin(Polymer.Element)) {
+        static get is() { return 'w-slide-up-panel'; }
+  
+        static get properties() {
+          return {
+            visible: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true
+            }
+          };
+        }
+
+        static get counter() {
+          return panelCounter;
+        }
+  
+        static set counter(val) {
+          panelCounter = val;
+        }
+  
+        connectedCallback() {
+          super.connectedCallback();
+          this._boundDismissOnOutsideClick = this._dismissOnOutsideClick.bind(this);
+          this._boundOnClosed = this._onClosed.bind(this);
+        }
+  
+        show() {
+          WSlideUpPanel.counter++;
+          this.visible = true;
+          document.addEventListener('click', this._boundDismissOnOutsideClick);
+          this.dispatchEvent(new CustomEvent('swipe-panel-open', { detail: null, bubbles: true, composed: true }));
+        }
+        
+        hide() {
+          if (this.visible) {
+            WSlideUpPanel.counter--;
+            this.addEventListener('transitionend', this._boundOnClosed);
+            this.visible = false;
           }
-        };
-      }
-
-      connectedCallback() {
-        super.connectedCallback();
-        this._boundDismissOnOutsideClick = this._dismissOnOutsideClick.bind(this);
-        this._boundOnClosed = this._onClosed.bind(this);
-      }
-
-      show() {
-        this.visible = true;
-        document.addEventListener('click', this._boundDismissOnOutsideClick);
-        this.dispatchEvent(new CustomEvent('swipe-panel-open', { detail: null, bubbles: true, composed: true }));
-      }
-      
-      hide() {
-        if (this.visible) {
-          this.addEventListener('transitionend', this._boundOnClosed);
-          this.visible = false;
+        }
+        
+        _dismissOnOutsideClick(e) {
+          if (!this._closest(e.composedPath()[0], this.tagName, true)) {
+            this.hide();
+            document.removeEventListener('click', this._boundDismissOnOutsideClick);
+          }
+        }
+        
+        _onClosed(e) {
+          this.removeEventListener('transitionend', this._boundOnClosed);
+          this.dispatchEvent(new CustomEvent('swipe-panel-closed', { detail: null, bubbles: true, composed: true }));
+        }
+  
+        _actionsTapped(e) {
+          let actionTapped = false;
+          if (this._closest(e.composedPath()[0], '[dismiss-panel]', true)) {
+            this.hide();
+            actionTapped = true;
+          }
+          
+          if (this._closest(e.composedPath()[0], '[confirm-panel]', true)) {
+            this.dispatchEvent(new CustomEvent('swipe-panel-confirmed', { detail: null, bubbles: true, composed: true }));
+            actionTapped = true;
+          }
+  
+          if (actionTapped) {
+            e.stopPropagation();
+          }
         }
       }
-      
-      _dismissOnOutsideClick(e) {
-        if (!this._closest(e.composedPath()[0], this.tagName, true)) {
-          this.hide();
-          document.removeEventListener('click', this._boundDismissOnOutsideClick);
-        }
-      }
-      
-      _onClosed(e) {
-        this.removeEventListener('transitionend', this._boundOnClosed);
-        this.dispatchEvent(new CustomEvent('swipe-panel-closed', { detail: null, bubbles: true, composed: true }));
-      }
-
-      _actionsTapped(e) {
-        if (this._closest(e.composedPath()[0], '[dismiss-panel]', true)) {
-          this.hide();
-        }
-      }
-    }
-
-    window.customElements.define(WSlideUpPanel.is, WSlideUpPanel);
+  
+      window.customElements.define(WSlideUpPanel.is, WSlideUpPanel);
+    })();
   </script>
 </dom-module>

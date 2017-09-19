@@ -1,0 +1,194 @@
+<!--
+@license
+Copyright (c) 2017 Peter Kaske
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
+<link rel="import" href="w-session-item.html">
+<link rel="import" href="w-slide-up-panel.html">
+<link rel="import" href="shared-styles.html">
+
+<!--
+# w-sessions
+
+Manage sessions for a workout plan.
+
+## Example
+```html
+<w-sessions resources="[[resources]]" value="{{selectedDays}}" name="session"></w-sessions>
+```
+
+-->
+<dom-module id="w-sessions">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      button.add {
+        background: transparent;
+        border: solid 1px var(--pc-300);
+        color: var(--pc-300);
+        padding: 10px;
+        width: 100%;
+        font-size: 14px;
+        border-radius: 2px;
+        box-sizing: border-box;
+        outline: false;
+      }
+
+      .btn-wrap {
+        margin-bottom: 20px;
+        padding: 0 10px;
+      }
+
+      w-session-item {
+        margin-bottom: 10px;
+      }
+
+      w-session-item:last-of-type {
+        margin-bottom: 20px;
+      }
+
+      #selExForm {
+        background: var(--pc-600);
+      }
+
+      .ex-item {
+        border-bottom: solid 1px var(--pc-800);
+      }
+
+      paper-checkbox {
+        display: block;
+        padding: 15px 10px;
+        --paper-checkbox-label-color: var(--text-100);
+        --paper-checkbox-unchecked-color: var(--pc-100);
+        --paper-checkbox-checked-color: var(--text-100);
+        --paper-checkbox-checkmark-color: var(--pc-600);
+      }
+
+      paper-checkbox[aria-checked="true"] {
+        background: var(--hl-400);
+      }
+    </style>
+
+    <div class="wrap">
+      <template is="dom-repeat" items="[[sessions]]" as="item">
+        <w-session-item item="[[item]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-session-item>
+      </template>
+
+      <div class="btn-wrap">
+        <button class="add" on-tap="_addSession">[[__('add-session')]]</button>
+      </div>
+    </div>
+
+    <!-- Exercise Selector Panel -->
+    <w-slide-up-panel full id="selExPanel" on-swipe-panel-confirmed="_exSelected">
+      <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
+      <h1 slot="header">[[__('select-exercises-headline')]]</h1>
+      <paper-icon-button icon="wi:check" slot="header-right" confirm-panel></paper-icon-button>
+      <div>
+        <iron-form id="selExForm" class="margin-top-10">
+          <form>
+            <template is="dom-repeat" items="[[exercises]]" as="ex">
+              <div class="ex-item">
+                <paper-checkbox name="exIds" value="[[ex._id]]">[[ex.name]]</paper-checkbox>
+              </div>
+            </template>
+          </form>
+        </iron-form>
+      </div>
+    </w-slide-up-panel>
+
+  </template>
+</dom-module>
+<script>
+  class WSessions extends Polymer.GestureEventListeners(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element)) {
+    static get is() { return 'w-sessions'; }
+
+    static get properties() {
+      return {
+        language: {
+          type: String,
+          value: 'en'
+        },
+  
+        resources: {
+          type: Object
+        },
+
+        name: {
+          type: String
+        },
+
+        exercises: {
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        exercisesMap: {
+          type: Map,
+          value: null
+        },
+
+        sessions: {
+          type: Array,
+          value: function() {
+            return [];
+          },
+          observer: '_sessionsChanged'
+        }
+      };
+    }
+
+    ready() {
+      super.ready();
+      this.__ = this.localize;
+
+      this.addEventListener('select-exercises', e => {
+        this._selectedExercisesCb = e.detail.cb;
+        this.$.selExPanel.show();
+      });
+    }
+
+    validate() {
+      if (this.value.length === 0) {
+        this.setAttribute('invalid', '');
+      } else {
+        this.removeAttribute('invalid');
+      }
+      return this.value.length > 0;
+    }
+
+    get value() {
+      console.log(this.shadowRoot.querySelectorAll('w-session-item'));
+    }
+
+    _addSession() {
+      this.push('sessions', { name: this.__('new-session-name', 'no', this.sessions.length + 1) });
+    }
+
+    _sessionsChanged() {
+      if (!Array.isArray(this.sessions)) {
+        this.sessions = [];
+      }
+    }
+
+    _exSelected(e) {
+      const data = this.$.selExForm.serializeForm();
+      e.target.hide();
+      this._selectedExercisesCb(data.exIds);
+    }
+  }
+
+  window.customElements.define(WSessions.is, WSessions);
+</script>

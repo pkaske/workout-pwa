@@ -32,6 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="lazy-import" href="workout-404.html">
 
 <script src="scripts/exercise-handler.js"></script>
+<script src="scripts/plan-handler.js"></script>
 
 <dom-module id="workout-app">
   <template>
@@ -42,12 +43,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --pc-800: #433B65;
         --pc-600: #54497C;
         --pc-300: #978BB9;
+        --pc-100: #CAC0E9;
         --text-100: white;
         --hl-400: #54BDFF;
         --red-900: #C11F1F;
         --green-700: #30B87F;
 
         display: block;
+      }
+
+      app-toolbar {
+        padding: 0 10px;
       }
 
       #headerActionBtn {
@@ -147,7 +153,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             fallback-selection="404"
             role="main">
           <workout-home active="[[_eq(page, 'home')]]" language="[[language]]" resources="[[resources]]" name="home"></workout-home>
-          <workout-plans active="[[_eq(page, 'plans')]]" language="[[language]]" resources="[[resources]]" name="plans"></workout-plans>
+          <workout-plans
+            active="[[_eq(page, 'plans')]]"
+            language="[[language]]"
+            resources="[[resources]]"
+            name="plans"
+            exercises="[[_exercises]]"
+            exercises-map="[[_exercisesMap]]"
+            plans="[[_plans]]"></workout-plans>
           <workout-stats active="[[_eq(page, 'stats')]]" language="[[language]]" resources="[[resources]]" name="stats"></workout-stats>
           <workout-exercises
             active="[[_eq(page, 'exercises')]]"
@@ -231,11 +244,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _setupPouchdb() {
         window.App = {
-          Exercises: new ExerciseHandler()
+          Exercises: new ExerciseHandler(),
+          Plans: new PlanHandler()
         };
 
         document.addEventListener('exercises-changed', e => {
           this._exercises = e.detail.docs;
+
+          const map = new Map();
+          for (const ex of this._exercises) {
+            map.set(ex._id, ex);
+          }
+          this._exercisesMap = map;
+        });
+
+        document.addEventListener('plans-changed', e => {
+          this._plans = e.detail.docs;
         });
       }
 
@@ -254,9 +278,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.$.appHeader.classList.add('lower-z');
         });
 
-        this.addEventListener('swipe-panel-closed', () => {
-          this.$.drawer.swipeOpen = true;
-          this.$.appHeader.classList.remove('lower-z');
+        this.addEventListener('swipe-panel-closed', (e) => {
+          // Only restore drawer options and app header z-index if no panels are open.
+          if (window.customElements.get('w-slide-up-panel').counter === 0) {
+            this.$.drawer.swipeOpen = true;
+            this.$.appHeader.classList.remove('lower-z');
+          }
         });
       }
 

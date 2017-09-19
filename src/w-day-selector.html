@@ -1,0 +1,143 @@
+<!--
+@license
+Copyright (c) 2017 Peter Kaske
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
+
+<!--
+# w-day-selector
+
+Select workouts days.
+
+## Example
+```html
+<w-day-selector resources="[[resources]]" value="{{selectedDays}}" name="days"></w-day-selector>
+```
+
+-->
+<dom-module id="w-day-selector">
+  <template>
+    <style>
+      :host {
+        display: block;
+        background: var(--pc-600);
+        padding: 10px;
+        -webkit-transition: background-color 80ms ease-in-out;
+        -moz-transition: background-color 80ms ease-in-out;
+        transition: background-color 80ms ease-in-out;
+      }
+
+      :host([invalid]) {
+        background-color: var(--red-900);
+      }
+
+      .wrap {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-justified;
+      }
+
+      button {
+        background: transparent;
+        border: solid 2px transparent;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        line-height: 30px;
+        text-align: center;
+        color: var(--pc-100);
+        font-weight: bold;
+        outline: none;
+        -webkit-transition: color 80ms ease-in-out, border-color 80ms ease-in-out;
+        -moz-transition: color 80ms ease-in-out, border-color 80ms ease-in-out;
+        transition: color 80ms ease-in-out, border-color 80ms ease-in-out;
+      }
+
+      button[active] {
+        font-weight: bold;
+        color: var(--hl-400);
+        border-color: var(--hl-400);
+      }
+    </style>
+
+    <div class="wrap">
+      <button on-tap="_toggleDay" data-id="1">[[__('monday-short')]]</button>
+      <button on-tap="_toggleDay" data-id="2">[[__('tuesday-short')]]</button>
+      <button on-tap="_toggleDay" data-id="3">[[__('wednesday-short')]]</button>
+      <button on-tap="_toggleDay" data-id="4">[[__('thursday-short')]]</button>
+      <button on-tap="_toggleDay" data-id="5">[[__('friday-short')]]</button>
+      <button on-tap="_toggleDay" data-id="6">[[__('saturday-short')]]</button>
+      <button on-tap="_toggleDay" data-id="0">[[__('sunday-short')]]</button>
+    </div>
+  </template>
+</dom-module>
+<script>
+  class WDaySelector extends Polymer.GestureEventListeners(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element)) {
+    static get is() { return 'w-day-selector'; }
+
+    static get properties() {
+      return {
+        language: {
+          type: String,
+          value: 'en'
+        },
+  
+        resources: {
+          type: Object
+        },
+
+        name: {
+          type: String
+        },
+
+        value: {
+          type: Array,
+          value: function() {
+            return [];
+          },
+          observer: '_valueChanged'
+        }
+      };
+    }
+
+    ready() {
+      super.ready();
+      this.__ = this.localize;
+    }
+
+    validate() {
+      if (this.value.length === 0) {
+        this.setAttribute('invalid', '');
+      } else {
+        this.removeAttribute('invalid');
+      }
+      return this.value.length > 0;
+    }
+
+    _valueChanged() {
+      if (!Array.isArray(this.value)) {
+        this.value = [];
+      }
+    }
+
+    _toggleDay(e) {
+      const btn = e.target;
+      const day = parseInt(btn.getAttribute('data-id'), 10);
+      const dayIdx = this.value.indexOf(day);
+      if (dayIdx === -1) {
+        btn.setAttribute('active', '');
+        this.value.push(day);
+        this.removeAttribute('invalid');
+      } else {
+        btn.removeAttribute('active');
+        this.value.splice(dayIdx, 1);
+      }
+    }
+  }
+
+  window.customElements.define(WDaySelector.is, WDaySelector);
+</script>

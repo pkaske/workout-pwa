@@ -1,0 +1,213 @@
+<!--
+@license
+Copyright (c) 2017 Peter Kaske
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="w-sortable.html">
+<link rel="import" href="w-swipe-action.html">
+<link rel="import" href="w-day-selector.html">
+<link rel="import" href="shared-styles.html">
+
+<!--
+# w-session-item
+
+Manage sessions for a workout plan.
+
+## Example
+```html
+<w-session-item resources="[[resources]]" value="{{selectedDays}}" name="session"></w-session-item>
+```
+
+-->
+<dom-module id="w-session-item">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        background: var(--pc-800);
+        -webkit-transition: background-color 80ms ease-in-out;
+        -moz-transition: background-color 80ms ease-in-out;
+        transition: background-color 80ms ease-in-out;
+      }
+
+      :host([invalid]) {
+        background-color: var(--red-900);
+      }
+
+      header {
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-center;
+        background: var(--pc-600);
+        padding-right: 10px;
+      }
+
+      .wrap {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-justified;
+      }
+
+      button {
+        background: transparent;
+        border: solid 2px transparent;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        line-height: 30px;
+        text-align: center;
+        color: var(--pc-100);
+        font-weight: bold;
+        outline: none;
+        -webkit-transition: color 80ms ease-in-out, border-color 80ms ease-in-out;
+        -moz-transition: color 80ms ease-in-out, border-color 80ms ease-in-out;
+        transition: color 80ms ease-in-out, border-color 80ms ease-in-out;
+      }
+
+      button[active] {
+        font-weight: bold;
+        color: var(--hl-400);
+        border-color: var(--hl-400);
+      }
+
+      label {
+        background: transparent;
+        border-bottom: none;
+      }
+
+      paper-input {
+        --paper-input-container-input: {
+          font-size: 18px;
+        };
+      }
+
+      .ex-list {
+        background: var(--pc-600);
+      }
+
+      .empty {
+        --iron-icon-width: 24px;
+        --iron-icon-height: 24px;
+      }
+
+      .empty p {
+        margin-top: 5px;
+      }
+    </style>
+
+    <div>
+      <header>
+        <paper-input name="name" value="[[item.name]]" label="[[__('name')]]" no-label-float required></paper-input>
+        <paper-icon-button class="smaller" icon="wi:close"></paper-icon-button>
+      </header>
+      <label>[[__('workout-day')]]</label>
+      <w-day-selector name="days" value="[[item.days]]" resources="[[resources]]"></w-day-selector>
+      
+      <label class="horizontal">
+        <div class="flex">[[__('title-exercises')]]</div>
+        <paper-icon-button class="smaller" icon="wi:plus" on-tap="_requestExercises"></paper-icon-button>
+      </label>
+      <w-sortable class="ex-list" handle=".ex-handle">
+        <template is="dom-repeat" items="[[_getExersices(_selExes)]]" as="ex">
+          <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex._id]]" on-action-triggered="_exActionTriggered">
+            <div slot="left-action">
+              <div>[[__('delete')]]</div>
+            </div>
+            <div slot="right-action">
+              <div>[[__('delete')]]</div>
+            </div>
+            <div class="content">
+              <iron-icon icon="wi:drag-vertical"></iron-icon>
+              <div>[[ex.name]]</div>
+            </div>
+          </w-swipe-action>
+        </template>
+      </w-sortable>
+      <div class="empty">
+        <iron-icon icon="wi:dumbbell"></iron-icon>
+        <p>[[__('no-exercises-selected-jet')]]</p>
+      </div>
+    </div>
+  </template>
+</dom-module>
+<script>
+  class WSessionItem extends Polymer.GestureEventListeners(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element)) {
+    static get is() { return 'w-session-item'; }
+
+    static get properties() {
+      return {
+        language: {
+          type: String,
+          value: 'en'
+        },
+  
+        resources: {
+          type: Object
+        },
+
+        exercisesMap: {
+          type: Map,
+          value: null
+        },
+
+        item: {
+          type: Object,
+          value: function() {
+            return {};
+          }
+        },
+
+        _selExes: {
+          type: Array,
+          value: function() {
+            return [];
+          }
+        }
+      };
+    }
+
+    ready() {
+      super.ready();
+      this.__ = this.localize;
+    }
+
+    validate() {
+      if (this.value.length === 0) {
+        this.setAttribute('invalid', '');
+      } else {
+        this.removeAttribute('invalid');
+      }
+      return this.value.length > 0;
+    }
+
+    _exercisesChanged() {
+
+    }
+
+    _requestExercises() {
+      this.dispatchEvent(new CustomEvent('select-exercises', { detail: {
+        cb: data => {
+          // Neat trick to make array items unique with the spread operator and Set.
+          this.set('_selExes', [...new Set(this._selExes.concat(data))]);
+        }
+      }, bubbles: true, composed: true }));
+    }
+
+    _getExersices() {
+      const list = [];
+      for (const id of this._selExes) {
+        list.push(this.exercisesMap.get(id));
+      }
+      return list;
+    }
+  }
+
+  window.customElements.define(WSessionItem.is, WSessionItem);
+</script>

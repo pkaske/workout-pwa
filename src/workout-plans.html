@@ -14,14 +14,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-form/iron-form.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="w-slide-up-panel.html">
+<link rel="import" href="w-sessions.html">
 <link rel="import" href="view-mixin.html">
+<link rel="import" href="helpers-mixin.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="workout-plans">
   <template>
     <style include="shared-styles">
       :host {
-        display: block;
+        @apply --layout-vertical;
       }
 
       paper-input[name="name"] {
@@ -39,9 +41,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --paper-input-container-label: {
           font-size: 20px;
           text-align: center;
+          color: var(--pc-100);
         }
       }
     </style>
+
+    <template id="planList" is="dom-repeat" items="[[plans]]" as="plan">
+      <w-swipe-action threshold="150" class="item" data-id$="[[plan._id]]" on-action-triggered="_actionTriggered">
+        <div slot="left-action">
+          <div>[[__('delete')]]</div>
+        </div>
+        <div slot="right-action">
+            <div>[[__('edit')]]</div>
+        </div>
+        <div class="content">
+          <div>[[plan.name]]</div>
+        </div>
+      </w-swipe-action>
+    </template>
+
+    <div class="empty" hidden$="[[_hasPlans(plans.length)]]">
+      <div>
+        <iron-icon icon="wi:clipboard-text"></iron-icon>
+        <p>[[__('no-workout-plans-jet')]]</p>
+      </div>
+    </div>
 
     <w-slide-up-panel full id="workoutPanel">
       <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
@@ -51,27 +75,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <iron-form id="workoutForm" class="margin-top-10">
           <form>
             <div class="horizontal">
-              <input type="hidden" name="_id" value="[[_selWorkout._id]]">
-              <input type="hidden" name="_rev" value="[[_selWorkout._rev]]">
-              <paper-input name="name" value="[[_selWorkout.name]]" label="[[__('workout-name')]]" no-label-float required></paper-input>
+              <input type="hidden" name="_id" value="[[_selPlan._id]]">
+              <input type="hidden" name="_rev" value="[[_selPlan._rev]]">
+              <paper-input name="name" value="[[_selPlan.name]]" label="[[__('workout-name')]]" no-label-float required></paper-input>
+            </div>
+            <div class="margin-top-10">
+              <w-sessions name="sessions" sessions="[[_selPlan.sessions]]" exercises="[[exercises]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-sessions>
             </div>
           </form>
         </iron-form>
       </div>
       <div slot="actions">
         <button danger dismiss-panel>[[__('cancel')]]</button>
-        <button confirm on-tap="_submitEditForm">[[__('save')]]</button>
+        <button confirm on-tap="_submitWorkoutForm">[[__('save')]]</button>
       </div>
     </w-slide-up-panel>
   </template>
 
   <script>
-    class WorkoutPlans extends Polymer.GestureEventListeners(ViewMixin(Polymer.Element)) {
+    class WorkoutPlans extends Polymer.GestureEventListeners(HelpersMixin(ViewMixin(Polymer.Element))) {
       static get is() { return 'workout-plans'; }
 
       static get properties() {
         return {
           title: { type: String, value: 'WORKOUT PLANS' },
+
           headerAction: {
             type: Object,
             value: function() {
@@ -79,12 +107,58 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 icon: 'wi:plus'
               };
             }
+          },
+
+          plans: {
+            type: Array,
+            value: function() {
+              return [];
+            }
+          },
+
+          exercises: {
+            type: Array,
+            value: function() {
+              return [];
+            }
+          },
+
+          exercisesMap: {
+            type: Map,
+            value: null
+          },
+
+          _selPlan: {
+            type: Object,
+            value: function() {
+              return {};
+            }
           }
         };
       }
 
+      connectedCallback() {
+        super.connectedCallback();
+
+        this.$.workoutForm.addEventListener('iron-form-presubmit', e => {
+          e.preventDefault();
+          console.log(this.$.workoutForm.serializeForm());
+          // window.App.Exercises.create().then(() => this.$.form.reset())
+        });
+
+        this._submitOnEnter();
+      }
+
       _onHeaderAction() {
         this.$.workoutPanel.show();
+      }
+
+      _hasPlans() {
+        return this.plans.length > 0;
+      }
+
+      _submitWorkoutForm() {
+        this.$.workoutForm.submit();
       }
     }
 
