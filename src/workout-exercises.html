@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/iron-form/iron-form.html">
-<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="w-sortable.html">
 <link rel="import" href="w-swipe-action.html">
@@ -109,7 +109,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <form>
         <div class="horizontal">
           <paper-input name="name" label="[[__('exercise-name')]]" no-label-float required></paper-input>
-          <button type="submit"><iron-icon icon="wi:plus"></iron-icon></button>
+          <paper-icon-button icon="wi:plus" on-tap="_submitForm"></paper-icon-button>
         </div>
       </form>
     </iron-form>
@@ -139,9 +139,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <w-slide-up-panel full id="editExercisePanel">
       <h1 slot="header">[[__('edit-exercise-header')]]</h1>
+      <paper-icon-button icon="wi:close" slot="header-right" dismiss-panel></paper-icon-button>
       <div>
         <label>[[__('edit-exercise-name')]]</label>
-        <iron-form id="editForm" class="margin-bottom-10">
+        <iron-form id="editForm">
           <form>
             <div class="horizontal">
               <input type="hidden" name="_id" value="[[_selExercise._id]]">
@@ -236,6 +237,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _hasExercises() {
         return this.exercises.length > 0;
+      }
+
+      _submitForm() {
+        this.$.form.submit();
       }
 
       _submitEditForm() {

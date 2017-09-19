@@ -45,6 +45,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-bottom: 20px;
       }
 
+      paper-icon-button {
+        color: var(--hl-400);
+        --paper-icon-button-ink-color: white;
+      }
+
       paper-input {
         --paper-input-container-input-color: var(--text-100);
         --paper-input-container-invalid-color: var(--red-900);
@@ -67,6 +72,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         };
 
         @apply --layout-flex;
+      }
+
+      iron-form paper-icon-button {
+        background: var(--pc-800);
+        height: 42px;
       }
 
       button {

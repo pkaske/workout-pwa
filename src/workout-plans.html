@@ -9,6 +9,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="w-slide-up-panel.html">
 <link rel="import" href="view-mixin.html">
 <link rel="import" href="shared-styles.html">
 
@@ -17,26 +22,69 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="shared-styles">
       :host {
         display: block;
+      }
 
-        padding: 10px;
+      paper-input[name="name"] {
+        --paper-input-container: {
+          padding: 20px;
+          background: var(--pc-600);
+          box-sizing: border-box;
+        };
+
+        --paper-input-container-input: {
+          font-size: 20px;
+          text-align: center;
+        };
+
+        --paper-input-container-label: {
+          font-size: 20px;
+          text-align: center;
+        }
       }
     </style>
 
-    <div class="card">
-      <h1>PLANS</h1>
-      <p>Ea duis bonorum nec, falli paulo aliquid ei eum.</p>
-      <p>Id nam odio natum malorum, tibique copiosae expetenda mel ea.Detracto suavitate repudiandae no eum. Id adhuc minim soluta nam.Id nam odio natum malorum, tibique copiosae expetenda mel ea.</p>
-    </div>
+    <w-slide-up-panel full id="workoutPanel">
+      <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
+      <h1 slot="header">[[__('new-workout-headline')]]</h1>
+      <paper-icon-button icon="wi:check" slot="header-right" confirm-panel></paper-icon-button>
+      <div>
+        <iron-form id="workoutForm" class="margin-top-10">
+          <form>
+            <div class="horizontal">
+              <input type="hidden" name="_id" value="[[_selWorkout._id]]">
+              <input type="hidden" name="_rev" value="[[_selWorkout._rev]]">
+              <paper-input name="name" value="[[_selWorkout.name]]" label="[[__('workout-name')]]" no-label-float required></paper-input>
+            </div>
+          </form>
+        </iron-form>
+      </div>
+      <div slot="actions">
+        <button danger dismiss-panel>[[__('cancel')]]</button>
+        <button confirm on-tap="_submitEditForm">[[__('save')]]</button>
+      </div>
+    </w-slide-up-panel>
   </template>
 
   <script>
-    class WorkoutPlans extends ViewMixin(Polymer.Element) {
+    class WorkoutPlans extends Polymer.GestureEventListeners(ViewMixin(Polymer.Element)) {
       static get is() { return 'workout-plans'; }
 
       static get properties() {
         return {
-          title: { type: String, value: 'WORKOUT PLANS' }
+          title: { type: String, value: 'WORKOUT PLANS' },
+          headerAction: {
+            type: Object,
+            value: function() {
+              return {
+                icon: 'wi:plus'
+              };
+            }
+          }
         };
+      }
+
+      _onHeaderAction() {
+        this.$.workoutPanel.show();
       }
     }
 

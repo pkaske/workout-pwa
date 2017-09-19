@@ -3,6 +3,7 @@
     "app-name": "Workout PWA",
     "title-home": "READY TO WORKOUT?",
     "title-exercises": "EXERCISES",
+    "title-plans": "WORKOUT PLANS",
     "exercise-name": "Name",
     "create-exercise": "Create Exercise",
     "delete-exercise": "DELETE",
@@ -11,12 +12,15 @@
     "cancel": "Cancel",
     "save": "Save",
     "edit-exercise-name": "Enter new name",
-    "edit-exercise-header": "Edit Exercise"
+    "edit-exercise-header": "EDIT EXERCISE",
+    "new-workout-headline": "NEW WORKOUT PLAN",
+    "workout-name": "Name your plan"
   },
   "de": {
     "app-name": "Workout PWA",
     "title-home": "BEREIT FÜR DEIN WORKOUT?",
     "title-exercises": "ÜBUNGEN",
+    "title-plans": "WORKOUTS",
     "exercise-name": "Name",
     "create-exercise": "Übung anlegen",
     "delete-exercise": "LÖSCHEN",
@@ -25,6 +29,8 @@
     "cancel": "Abbrechen",
     "save": "Speichern",
     "edit-exercise-name": "Neuer Name",
-    "edit-exercise-header": "Übung bearbeiten"
+    "edit-exercise-header": "ÜBUNG BEARBEITEN",
+    "new-workout-headline": "NEUER WORKOUT PLAN",
+    "workout-name": "Name deines Workouts"
   }
 }

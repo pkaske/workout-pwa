@@ -73,34 +73,25 @@ Displays a panel that slide up from the bottom.
         @apply --layout-horizontal;
         @apply --layout-center;
         @apply --layout-justified;
+      }
+
+      header .header-title ::slotted(*) {
         padding-left: 10px;
-      }
-
-      header button {
-        border-style: none;
-        background: transparent;
-        color: var(--white);
-        border-left: solid 1px var(--white);
-        height: 64px;
-        width: 64px;
-        @apply --layout-horizontal;
-        @apply --layout-center-center;
-      }
-
-      header ::slotted(*) {
-        @apply --layout-flex;
       }
     </style>
 
-    <div class="wrap">
+    <div class="wrap" on-tap="_actionsTapped">
       <header>
-        <slot name="header"></slot>
-        <button on-tap="hide"><iron-icon icon="wi:close"></iron-icon></button>
+        <slot name="header-left"></slot>
+        <div class="header-title">
+          <slot name="header"></slot>
+        </div>
+        <slot name="header-right"></slot>
       </header>
       <div class="content">
         <slot></slot>
       </div>
-      <div class="actions" on-tap="_actionsTapped">
+      <div class="actions">
         <slot name="actions"></slot>
       </div>
     </div>
