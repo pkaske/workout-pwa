@@ -37,7 +37,7 @@ Manage sessions for a workout plan.
         transition: background-color 80ms ease-in-out;
       }
 
-      :host([invalid]) {
+      [invalid] {
         background-color: var(--red-900);
       }
 
@@ -50,9 +50,35 @@ Manage sessions for a workout plan.
       }
 
       .wrap {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        @apply --layout-justified;
+        position: relative;
+      }
+
+      #confirmDelete {
+        @apply --layout-vertical;
+        pointer-events: none;
+        opacity: 0;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        padding: 10px;
+        text-align: center;
+        background: var(--pc-800);
+        z-index: 1;
+        -webkit-transition: opacity 80ms ease-in-out;
+        -moz-transition: opacity 80ms ease-in-out;
+        transition: opacity 80ms ease-in-out;
+      }
+
+      #confirmDelete .content {
+        padding-top: 20px;
+        @apply --layout-flex;
+      }
+
+      #confirmDelete[show] {
+        pointer-events: all;
+        opacity: 1;
       }
 
       button {
@@ -97,10 +123,6 @@ Manage sessions for a workout plan.
         --iron-icon-height: 24px;
       }
 
-      .empty p {
-        margin-top: 5px;
-      }
-
       w-swipe-action {
         --w-swipe-action-active-right: {
           background-color: var(--red-900);
@@ -108,37 +130,47 @@ Manage sessions for a workout plan.
       }
     </style>
 
-    <div>
+    <div class="wrap">
       <header>
-        <paper-input name="name" value="[[item.name]]" label="[[__('name')]]" no-label-float required></paper-input>
-        <paper-icon-button class="smaller" icon="wi:close"></paper-icon-button>
+        <paper-input id="name" value="[[item.name]]" label="[[__('name')]]" no-label-float required></paper-input>
+        <paper-icon-button class="smaller" icon="wi:close" on-tap="_confirmDeleteSession"></paper-icon-button>
       </header>
       <label>[[__('workout-day')]]</label>
-      <w-day-selector name="days" value="[[item.days]]" resources="[[resources]]"></w-day-selector>
+      <w-day-selector id="days" value="[[item.days]]" resources="[[resources]]"></w-day-selector>
       
-      <label class="horizontal">
-        <div class="flex">[[__('title-exercises')]]</div>
-        <paper-icon-button class="smaller" icon="wi:plus" on-tap="_requestExercises"></paper-icon-button>
-      </label>
-      <w-sortable id="exList" handle=".ex-handle" selector="w-swipe-action" on-items-rearranged="_exercisesRearranged">
-        <template is="dom-repeat" items="[[_getExersices(_selExes)]]" as="ex">
-          <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex._id]]" on-action-triggered="_exActionTriggered" on-swipe-start="_checkIfSwipeEnabled">
-            <div slot="left-action">
-              <div>[[__('delete')]]</div>
-            </div>
-            <div slot="right-action">
-              <div>[[__('delete')]]</div>
-            </div>
-            <div class="content">
-              <iron-icon class="ex-handle" icon="wi:drag-vertical"></iron-icon>
-              <div>[[ex.name]]</div>
-            </div>
-          </w-swipe-action>
-        </template>
-      </w-sortable>
-      <div class="empty" hidden$="[[_hasExercises(_selExes.length)]]">
-        <iron-icon icon="wi:dumbbell"></iron-icon>
-        <p>[[__('no-exercises-selected-jet')]]</p>
+      <div id="exWrap">
+        <label class="horizontal">
+          <div class="flex">[[__('title-exercises')]]</div>
+          <paper-icon-button class="smaller" icon="wi:plus" on-tap="_requestExercises"></paper-icon-button>
+        </label>
+        <w-sortable id="exList" handle=".ex-handle" selector="w-swipe-action" on-items-rearranged="_exercisesRearranged">
+          <template is="dom-repeat" items="[[_getExersices(_selExes)]]" as="ex">
+            <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex._id]]" on-action-triggered="_exActionTriggered" on-swipe-start="_checkIfSwipeEnabled">
+              <div slot="left-action">
+                <div>[[__('delete')]]</div>
+              </div>
+              <div slot="right-action">
+                <div>[[__('delete')]]</div>
+              </div>
+              <div class="content">
+                <iron-icon class="ex-handle" icon="wi:drag-vertical"></iron-icon>
+                <div>[[ex.name]]</div>
+              </div>
+            </w-swipe-action>
+          </template>
+        </w-sortable>
+      </div>
+
+      <!-- Confirm delete -->
+
+      <div id="confirmDelete">
+        <div class="content">
+          <p>[[__('confirm-delete-session')]]</p>
+        </div>
+        <div class="horizontal justified">
+          <paper-icon-button icon="wi:arrow-back" on-tap="_cancelDeleteSession"></paper-icon-button>
+          <paper-icon-button icon="wi:check" on-tap="_deleteSession"></paper-icon-button>
+        </div>
       </div>
     </div>
   </template>
@@ -161,6 +193,11 @@ Manage sessions for a workout plan.
         exercisesMap: {
           type: Map,
           value: null
+        },
+
+        index: {
+          type: Number,
+          value: -1
         },
 
         item: {
@@ -191,16 +228,24 @@ Manage sessions for a workout plan.
     }
 
     validate() {
-      if (this.value.length === 0) {
-        this.setAttribute('invalid', '');
+      const nameValid = this.$.name.validate();
+      const daysValid = this.$.days.validate();
+      const exercisesValid = this._selExes && this._selExes.length > 0;
+
+      if (!exercisesValid) {
+        this.$.exWrap.setAttribute('invalid', '');
       } else {
-        this.removeAttribute('invalid');
+        this.$.exWrap.removeAttribute('invalid');
       }
-      return this.value.length > 0;
+      return nameValid && daysValid && exercisesValid;
     }
 
-    _exercisesChanged() {
-
+    get value() {
+      return {
+        name: this.$.name.value,
+        days: this.$.days.value,
+        exercises: this._selExes.slice(0)
+      };
     }
 
     _requestExercises() {
@@ -208,6 +253,9 @@ Manage sessions for a workout plan.
         cb: data => {
           // Neat trick to make array items unique with the spread operator and Set.
           this.set('_selExes', [...new Set(this._selExes.concat(data))]);
+          if (this._selExes.length > 0) {
+            this.$.exWrap.removeAttribute('invalid');
+          }
         }
       }, bubbles: true, composed: true }));
     }
@@ -254,6 +302,19 @@ Manage sessions for a workout plan.
 
     _hasExercises(count) {
       return count > 0;
+    }
+
+    _confirmDeleteSession() {
+      this.$.confirmDelete.setAttribute('show', '');
+    }
+
+    _cancelDeleteSession() {
+      this.$.confirmDelete.removeAttribute('show');
+    }
+
+    _deleteSession() {
+      this.$.confirmDelete.removeAttribute('show');
+      this.dispatchEvent(new CustomEvent('delete-session', { detail: this.index, bubbles: true, composed: true }));
     }
   }
 

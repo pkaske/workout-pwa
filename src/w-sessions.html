@@ -32,6 +32,11 @@ Manage sessions for a workout plan.
         display: block;
       }
 
+      :host([invalid]) button.add {
+        color: var(--red-900);
+        border-color: var(--red-900);
+      }
+
       button.add {
         background: transparent;
         border: dashed 1px var(--pc-300);
@@ -50,7 +55,7 @@ Manage sessions for a workout plan.
       }
 
       w-session-item {
-        margin-bottom: 10px;
+        margin-bottom: 25px;
       }
 
       w-session-item:last-of-type {
@@ -79,9 +84,9 @@ Manage sessions for a workout plan.
       }
     </style>
 
-    <div class="wrap">
+    <div class="wrap" on-delete-session="_deleteSession">
       <template is="dom-repeat" items="[[sessions]]" as="item">
-        <w-session-item item="[[item]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-session-item>
+        <w-session-item item="[[item]]" index="[[index]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-session-item>
       </template>
 
       <div class="btn-wrap">
@@ -161,20 +166,30 @@ Manage sessions for a workout plan.
     }
 
     validate() {
-      if (this.value.length === 0) {
+      let valid = true;
+      const sessionItems = this.shadowRoot.querySelectorAll('w-session-item');
+      sessionItems.forEach(item => {
+        valid = item.validate() && valid;
+      });
+
+      if (sessionItems.length === 0) {
         this.setAttribute('invalid', '');
       } else {
         this.removeAttribute('invalid');
       }
-      return this.value.length > 0;
+
+      return valid && sessionItems.length > 0;
     }
 
     get value() {
-      console.log(this.shadowRoot.querySelectorAll('w-session-item'));
+      return [...this.shadowRoot.querySelectorAll('w-session-item')].map(item => {
+        return item.value;
+      });
     }
 
     _addSession() {
       this.push('sessions', { name: this.__('new-session-name', 'no', this.sessions.length + 1) });
+      this.removeAttribute('invalid');
     }
 
     _sessionsChanged() {
@@ -188,6 +203,11 @@ Manage sessions for a workout plan.
       e.target.hide();
       this._selectedExercisesCb(data.exIds);
       this.$.selExPanel.querySelectorAll('paper-checkbox').forEach(el => el.checked = false);
+    }
+
+    _deleteSession(e) {
+      const idx = e.detail;
+      this.splice('sessions', idx, 1);
     }
   }
 

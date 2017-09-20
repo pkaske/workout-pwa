@@ -26,8 +26,8 @@
     "workout-day": "SELECT DAYS",
     "add-session": "ADD SESSION",
     "new-session-name": "Session {no}",
-    "no-exercises-selected-jet": "Add exercises here",
-    "select-exercises-headline": "SELECT EXERCISES"
+    "select-exercises-headline": "SELECT EXERCISES",
+    "confirm-delete-session": "Delete this session?"
   },
   "de": {
     "app-name": "Workout PWA",
@@ -54,9 +54,9 @@
     "saturday-short": "Sa",
     "sunday-short": "So",
     "workout-day": "WOCHENTAGE WÄHLEN",
-    "add-session": "NEUE SESSION",
+    "add-session": "NEUE EINHEIT",
     "new-session-name": "Session {no}",
-    "no-exercises-selected-jet": "Übungen auswählen",
-    "select-exercises-headline": "ÜBUNGEN WÄHLEN"
+    "select-exercises-headline": "ÜBUNGEN WÄHLEN",
+    "confirm-delete-session": "Diese Einheit löschen?"
   }
 }

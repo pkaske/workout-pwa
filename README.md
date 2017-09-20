@@ -31,14 +31,12 @@ Currently no sync to any server happens.
 
 ```json
 {
-  "_id": "ID",
+  "_id": "PouchDB Doc ID",
+  "_rev": "PouchDB Rev",
   "name": "Workout plan name",
   "sessions": [{
     "name": "Leg day",
     "days": [ 1, 4 ],
-    "exercises": [{
-      "_exID": "ID of the exercise",
-      "reps": 8
-    }]
+    "exercises": [ "UUID1", "UUID2" ]
   }]
 }

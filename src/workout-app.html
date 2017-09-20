@@ -48,6 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --hl-400: #54BDFF;
         --red-900: #C11F1F;
         --green-700: #30B87F;
+        --header-shadow: 0px 0px 6px rgba(0, 0, 0, 0.77);
 
         display: block;
       }
@@ -260,6 +261,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         document.addEventListener('plans-changed', e => {
           this._plans = e.detail.docs;
+          console.log(this._plans);
         });
       }
 
@@ -278,11 +280,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.$.appHeader.classList.add('lower-z');
         });
 
-        this.addEventListener('swipe-panel-closed', (e) => {
+        this.addEventListener('swipe-panel-closed', e => {
           // Only restore drawer options and app header z-index if no panels are open.
           if (window.customElements.get('w-slide-up-panel').counter === 0) {
             this.$.drawer.swipeOpen = true;
             this.$.appHeader.classList.remove('lower-z');
+          }
+        });
+
+        // Add workaround script to get focused child elements event when in shadowRoot.
+        document.addEventListener('focus', ShadowFocusHandler, true);
+
+        document.addEventListener('-shadow-focus', e => {
+          this._focusedElement = e.detail;
+        });
+
+        // Make sure elements with focus are scrolled into view if soft keyboard popus up or window size is changed.
+        window.addEventListener('resize', e => {
+          if (this._focusedElement) {
+            this._focusedElement.scrollIntoView(false);
           }
         });
       }

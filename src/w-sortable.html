@@ -238,7 +238,7 @@ Name | Type | Default | Description
         if (this._sortables[i].el === this._target) {
           oldIndex = i;
         }
-        list[this._sortables[i].el.getBoundingClientRect().top] = this._sortables[i].el;
+        list[parseInt(this._sortables[i].el.getBoundingClientRect().top, 10)] = this._sortables[i].el;
       }
       const newOrder = list.filter(el => el !== undefined);
       const targetIdx = newOrder.findIndex(el => el === this._target);

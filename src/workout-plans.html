@@ -79,7 +79,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <input type="hidden" name="_rev" value="[[_selPlan._rev]]">
               <paper-input name="name" value="[[_selPlan.name]]" label="[[__('workout-name')]]" no-label-float required></paper-input>
             </div>
-            <div class="margin-top-10">
+            <div class="margin-top-25">
               <w-sessions name="sessions" sessions="[[_selPlan.sessions]]" exercises="[[exercises]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-sessions>
             </div>
           </form>
@@ -138,9 +138,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         this.$.workoutForm.addEventListener('iron-form-presubmit', e => {
           e.preventDefault();
-          console.log(this.$.workoutForm.serializeForm());
+          const plan = this.$.workoutForm.serializeForm();
           this.$.workoutPanel.hide();
-          // window.App.Exercises.create().then(() => this.$.form.reset())
+          window.App.Plans.create(plan).then(() => this.$.workoutForm.reset())
         });
 
         this._submitOnEnter();

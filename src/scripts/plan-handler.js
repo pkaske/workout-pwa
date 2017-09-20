@@ -14,8 +14,7 @@ class PlanHandler {
   }
 
   create(doc) {
-    const exercise = doc;
-    return this._planDb.post(exercise);
+    return this._planDb.post(doc);
   }
 
   edit(doc) {
