@@ -1,0 +1,24 @@
+image: tetraweb/php
+
+variables:
+  SSH_URL: 'deploy@codeblob.work'
+  DEST_PATH: '/home/deploy/$CI_PROJECT_NAME'
+
+before_script:
+  - apt-get update
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - mkdir -p ~/.ssh
+  - eval $(ssh-agent -s)
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - cd $CI_PROJECT_DIR
+  - npm install
+  - npm i -g bower@1.7.9
+  - bower i --allow-root
+
+stage_deploy:
+  only:
+    - master
+  script:
+    - ssh-add <(echo "$PREVIEW_PRIVATE_KEY")
+    - ssh -p22 $SSH_URL "rm -rf $DEST_PATH/*"
+    - scp -P22 -r $CI_PROJECT_DIR/* $SSH_URL:$DEST_PATH
