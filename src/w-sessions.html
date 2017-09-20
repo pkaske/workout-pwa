@@ -34,7 +34,7 @@ Manage sessions for a workout plan.
 
       button.add {
         background: transparent;
-        border: solid 1px var(--pc-300);
+        border: dashed 1px var(--pc-300);
         color: var(--pc-300);
         padding: 10px;
         width: 100%;
@@ -187,6 +187,7 @@ Manage sessions for a workout plan.
       const data = this.$.selExForm.serializeForm();
       e.target.hide();
       this._selectedExercisesCb(data.exIds);
+      this.$.selExPanel.querySelectorAll('paper-checkbox').forEach(el => el.checked = false);
     }
   }
 

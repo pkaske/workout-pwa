@@ -88,7 +88,7 @@ Manage sessions for a workout plan.
         };
       }
 
-      .ex-list {
+      #exList {
         background: var(--pc-600);
       }
 
@@ -99,6 +99,12 @@ Manage sessions for a workout plan.
 
       .empty p {
         margin-top: 5px;
+      }
+
+      w-swipe-action {
+        --w-swipe-action-active-right: {
+          background-color: var(--red-900);
+        };
       }
     </style>
 
@@ -114,9 +120,9 @@ Manage sessions for a workout plan.
         <div class="flex">[[__('title-exercises')]]</div>
         <paper-icon-button class="smaller" icon="wi:plus" on-tap="_requestExercises"></paper-icon-button>
       </label>
-      <w-sortable class="ex-list" handle=".ex-handle">
+      <w-sortable id="exList" handle=".ex-handle" selector="w-swipe-action" on-items-rearranged="_exercisesRearranged">
         <template is="dom-repeat" items="[[_getExersices(_selExes)]]" as="ex">
-          <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex._id]]" on-action-triggered="_exActionTriggered">
+          <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex._id]]" on-action-triggered="_exActionTriggered" on-swipe-start="_checkIfSwipeEnabled">
             <div slot="left-action">
               <div>[[__('delete')]]</div>
             </div>
@@ -124,13 +130,13 @@ Manage sessions for a workout plan.
               <div>[[__('delete')]]</div>
             </div>
             <div class="content">
-              <iron-icon icon="wi:drag-vertical"></iron-icon>
+              <iron-icon class="ex-handle" icon="wi:drag-vertical"></iron-icon>
               <div>[[ex.name]]</div>
             </div>
           </w-swipe-action>
         </template>
       </w-sortable>
-      <div class="empty">
+      <div class="empty" hidden$="[[_hasExercises(_selExes.length)]]">
         <iron-icon icon="wi:dumbbell"></iron-icon>
         <p>[[__('no-exercises-selected-jet')]]</p>
       </div>
@@ -178,6 +184,12 @@ Manage sessions for a workout plan.
       this.__ = this.localize;
     }
 
+    connectedCallback() {
+      super.connectedCallback();
+
+      this._boundFinishRemove = this._finishRemove.bind(this);
+    }
+
     validate() {
       if (this.value.length === 0) {
         this.setAttribute('invalid', '');
@@ -206,6 +218,42 @@ Manage sessions for a workout plan.
         list.push(this.exercisesMap.get(id));
       }
       return list;
+    }
+
+    _exActionTriggered(e) {
+      const type = e.detail.type === 'left' ? '100%' : '-100%';
+      const item = e.target;
+      item.classList.add('animated');
+      item.addEventListener('transitionend', this._boundFinishRemove);
+      item.style.transform = `translateX(${type})`;
+      item.style.opacity = 0;
+    }
+
+    _finishRemove(e) {
+      const item = e.target;
+      const id = item.getAttribute('data-id');
+      item.removeEventListener('transitionend', this._boundFinishRemove);
+      this._selExes = this._selExes.filter(exId => exId !== id);
+      item.resetAnimation();
+      item.classList.remove('animated');
+      item.style.transform = 'none';
+      item.style.opacity = 1;
+    }
+
+    _exercisesRearranged(e) {
+      this._selExes = e.detail.newOrder.map(item => { 
+        return item.getAttribute('data-id');
+      });
+    } 
+
+    _checkIfSwipeEnabled(e) { 
+      if (this.$.exList.sorting) { 
+        e.preventDefault();
+      } 
+    }
+
+    _hasExercises(count) {
+      return count > 0;
     }
   }
 

@@ -25,72 +25,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         @apply --layout-vertical;
       }
-
-      .item {
-        opacity: 1;
-
-        --w-swipe-action-content: {
-          color: var(--text-100);
-          border-top: solid 1px var(--pc-850);
-          padding: 10px;
-          background: var(--pc-600)
-        };
-
-        --w-swipe-action-content-left: {
-          font-family: 'Roboto Condensed';
-          width: 100px;
-        };
-
-        --w-swipe-action-content-right: {
-          font-family: 'Roboto Condensed';
-          width: 100px;
-        };
-
-        --w-swipe-action-left: {
-          -webkit-transition: background-color 150ms ease-in-out;
-          -moz-transition: background-color 150ms ease-in-out;
-          transition: background-color 150ms ease-in-out;
-          background-color: var(--pc-300);
-        };
-
-        --w-swipe-action-right: {
-          -webkit-transition: background-color 150ms ease-in-out;
-          -moz-transition: background-color 150ms ease-in-out;
-          transition: background-color 150ms ease-in-out;
-          background-color: var(--pc-300);
-        };
-
-        --w-swipe-action-active-left: {
-          background-color: var(--red-900);
-        };
-
-        --w-swipe-action-active-right: {
-          background-color: var(--hl-400);
-        };
-      }
-
-      .item.animated {
-        transition: transform 200ms ease-in-out, opacity 180ms ease-in-out;
-      }
-
-      .item:first-of-type {
-        --w-swipe-action-content: {
-          color: var(--text-100);
-          border-top: none;
-          padding: 10px;
-          background: var(--pc-600)
-        };
-      }
-
-      .item .content {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-      }
-
-      .item .content iron-icon {
-        color: var(--pc-900);
-        margin-right: 5px;
-      }
     </style>
 
     <label class="margin-top-10">[[__('create-exercise')]]</label>
@@ -105,7 +39,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div>
       <template id="exerciseList" is="dom-repeat" items="[[exercises]]" as="ex">
-        <w-swipe-action threshold="150" class="item" data-id$="[[ex._id]]" on-action-triggered="_actionTriggered">
+        <w-swipe-action threshold="150" data-id$="[[ex._id]]" on-action-triggered="_actionTriggered">
           <div slot="left-action">
             <div>[[__('delete')]]</div>
           </div>

@@ -70,7 +70,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <w-slide-up-panel full id="workoutPanel">
       <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
       <h1 slot="header">[[__('new-workout-headline')]]</h1>
-      <paper-icon-button icon="wi:check" slot="header-right" confirm-panel></paper-icon-button>
+      <paper-icon-button icon="wi:check" slot="header-right" on-tap="_submitWorkoutForm" confirm-panel></paper-icon-button>
       <div>
         <iron-form id="workoutForm" class="margin-top-10">
           <form>
@@ -84,10 +84,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
           </form>
         </iron-form>
-      </div>
-      <div slot="actions">
-        <button danger dismiss-panel>[[__('cancel')]]</button>
-        <button confirm on-tap="_submitWorkoutForm">[[__('save')]]</button>
       </div>
     </w-slide-up-panel>
   </template>
@@ -143,6 +139,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.workoutForm.addEventListener('iron-form-presubmit', e => {
           e.preventDefault();
           console.log(this.$.workoutForm.serializeForm());
+          this.$.workoutPanel.hide();
           // window.App.Exercises.create().then(() => this.$.form.reset())
         });
 

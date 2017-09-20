@@ -120,6 +120,82 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: var(--white);
       }
 
+      w-swipe-action {
+        opacity: 1;
+
+        --w-swipe-action-content: {
+          color: var(--text-100);
+          border-top: solid 1px var(--pc-850);
+          padding: 10px;
+          background: var(--pc-600)
+        };
+
+        --w-swipe-action-content-left: {
+          font-family: 'Roboto Condensed';
+          width: 100px;
+        };
+
+        --w-swipe-action-content-right: {
+          font-family: 'Roboto Condensed';
+          width: 100px;
+        };
+
+        --w-swipe-action-left: {
+          -webkit-transition: background-color 150ms ease-in-out;
+          -moz-transition: background-color 150ms ease-in-out;
+          transition: background-color 150ms ease-in-out;
+          background-color: var(--pc-300);
+        };
+
+        --w-swipe-action-right: {
+          -webkit-transition: background-color 150ms ease-in-out;
+          -moz-transition: background-color 150ms ease-in-out;
+          transition: background-color 150ms ease-in-out;
+          background-color: var(--pc-300);
+        };
+
+        --w-swipe-action-active-left: {
+          background-color: var(--red-900);
+        };
+
+        --w-swipe-action-active-right: {
+          background-color: var(--hl-400);
+        };
+      }
+
+      w-swipe-action[is-dragged] {
+        --w-swipe-action-content: {
+          color: var(--text-100);
+          border-top: solid 1px var(--pc-850);
+          border-bottom: solid 1px var(--pc-850);
+          padding: 10px;
+          background: var(--pc-600)
+        };
+      }
+
+      w-swipe-action.animated {
+        transition: transform 200ms ease-in-out, opacity 180ms ease-in-out;
+      }
+
+      w-swipe-action:first-of-type {
+        --w-swipe-action-content: {
+          color: var(--text-100);
+          border-top: none;
+          padding: 10px;
+          background: var(--pc-600)
+        };
+      }
+
+      w-swipe-action .content {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
+      w-swipe-action .content iron-icon {
+        color: var(--pc-900);
+        margin-right: 5px;
+      }
+
       .horizontal {
         @apply --layout-horizontal;
         @apply --layout-center;
