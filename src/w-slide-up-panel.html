@@ -133,7 +133,7 @@ Displays a panel that slide up from the bottom.
         show() {
           WSlideUpPanel.counter++;
           this.visible = true;
-          document.addEventListener('click', this._boundDismissOnOutsideClick);
+          Polymer.Gestures.addListener('tap', this._boundDismissOnOutsideClick);
           this.dispatchEvent(new CustomEvent('swipe-panel-open', { detail: null, bubbles: true, composed: true }));
         }
         
@@ -148,7 +148,7 @@ Displays a panel that slide up from the bottom.
         _dismissOnOutsideClick(e) {
           if (!this._closest(e.composedPath()[0], this.tagName, true)) {
             this.hide();
-            document.removeEventListener('click', this._boundDismissOnOutsideClick);
+            Polymer.Gestures.removeListener('click', this._boundDismissOnOutsideClick);
           }
         }
         

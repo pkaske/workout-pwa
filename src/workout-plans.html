@@ -143,9 +143,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           const plan = this.$.workoutForm.serializeForm();
           this.$.workoutPanel.hide();
           if (plan._id) {
-            window.App.Plans.edit(plan).then(() => this.$.workoutForm.reset())
+            window.App.Plans.edit(plan).then(() => this._resetWorkoutForm())
           } else {
-            window.App.Plans.create(plan).then(() => this.$.workoutForm.reset())
+            window.App.Plans.create(plan).then(() => this._resetWorkoutForm())
           }
         });
 
@@ -153,7 +153,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _onHeaderAction() {
+        this._resetWorkoutForm();
         this.$.workoutPanel.show();
+      }
+
+      _resetWorkoutForm() {
+        this.$.workoutForm.reset();
+        this._selPlan = { name: '' };
       }
 
       _hasPlans() {
@@ -173,9 +179,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._triggerRemove(item);
         }
       }
-
+      
       _triggerEdit(item) {
-        this._selPlan = this.$.planList.itemForElement(item);
+        this._resetWorkoutForm();
+        // We need to wait a frame before updateing or children's dom-repeats won't update correctly.
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          this._selPlan = this.$.planList.itemForElement(item);
+        });
         this.$.workoutPanel.show();
       }
       
