@@ -122,6 +122,14 @@ Select workouts days.
       if (!Array.isArray(this.value)) {
         this.value = [];
       }
+
+      this.shadowRoot.querySelectorAll('button').forEach(btn => {
+        if (this.value.indexOf(parseInt(btn.getAttribute('data-id'), 10)) > -1) {
+          btn.setAttribute('active', '');
+        } else {
+          btn.removeAttribute('active');
+        }
+      });
     }
 
     _toggleDay(e) {

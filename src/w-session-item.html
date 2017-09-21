@@ -204,7 +204,8 @@ Manage sessions for a workout plan.
           type: Object,
           value: function() {
             return {};
-          }
+          },
+          observer: '_itemChanged'
         },
 
         _selExes: {
@@ -246,6 +247,10 @@ Manage sessions for a workout plan.
         days: this.$.days.value,
         exercises: this._selExes.slice(0)
       };
+    }
+
+    _itemChanged() {
+      this._selExes = this.item.exercises || [];
     }
 
     _requestExercises() {
