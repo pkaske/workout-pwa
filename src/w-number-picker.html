@@ -1,0 +1,192 @@
+<!--
+@license
+Copyright (c) 2017 Peter Kaske
+License: MIT
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+
+<!--
+# w-number-picker
+
+Helps to quickly select a number with just one touch.
+
+## Example
+```html
+<w-number-picker value="{{number}}" name="number"></w-number-picker>
+```
+
+-->
+<dom-module id="w-number-picker">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+      }
+
+      #nob {
+        width: 32px;
+        height: 32px;
+        transform: translate3d(0, 0, 0);
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+      }
+
+      .nob-bubble {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: var(--pc-600);
+        border-radius: 50%;
+        -webkit-transition: background-color 280ms ease-in-out;
+        -moz-transition: background-color 280ms ease-in-out;
+        transition: background-color 280ms ease-in-out;
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+      }
+
+      :host([tracking]) .nob-bubble {
+        background-color: var(--hl-400);
+        transform: scale(1.3);
+      }
+
+      #info {
+        -webkit-transition: transform 280ms ease-in-out, opacity 200ms ease-in-out;
+        -moz-transition: transform 280ms ease-in-out, opacity 200ms ease-in-out;
+        transition: transform 280ms ease-in-out, opacity 200ms ease-in-out;
+        transform: translateX(-80%);
+      }
+
+      :host([bubble-right]) #info {
+        transform: translateX(80%);
+      }
+
+      .info-bubble {
+        width: 54px;
+        height: 54px;
+        background: var(--hl-400);
+        border-radius: 50% 50% 10% 50%;
+        transform: scale(0) rotateX(45deg) rotateZ(-45deg);
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+      }
+
+      :host([bubble-right]) .info-bubble {
+        border-radius: 10% 50% 50% 50%;
+      }
+
+      .info-bubble > div {
+        transform: rotateZ(45deg);
+      }
+
+      :host([tracking]) .info-bubble {
+        transform: scale(1) rotateZ(-45deg);
+      }
+
+      :host([tracking]) #info {
+        opacity: 1;
+        transform: translateX(-140%);
+      }
+
+      :host([tracking][bubble-right]) #info {
+        transform: translateX(140%);
+      }
+    </style>
+
+    <div id="nob" on-track="_handleTrack">
+      <div class="nob-bubble"><div>[[value]]</div></div>
+      <div id="info">
+        <div class="info-bubble">
+          <div>[[value]]</div>
+        </div>
+      </div>
+    </div>
+  </template>
+</dom-module>
+<script>
+  class WNumberPicker extends Polymer.GestureEventListeners(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element)) {
+    static get is() { return 'w-number-picker'; }
+
+    static get properties() {
+      return {
+        value: {
+          type: Array,
+          value: 0,
+          notify: true
+        },
+
+        min: {
+          type: Number,
+          value: -Infinity
+        },
+
+        max: {
+          type: Number,
+          value: Infinity
+        },
+
+        sensitivity: {
+          type: Number,
+          value: 15
+        },
+
+        tracking: {
+          type: Boolean,
+          value: false,
+          readOnly: true,
+          reflectToAttribute: true
+        }
+      };
+    }
+
+    constructor() {
+      super();
+      this._boundSnapBackEnd = this._snapBackEnd.bind(this);
+    }
+
+    _handleTrack(e) {
+      switch (e.detail.state) {
+        case 'start':
+          this._setTracking(true);
+          this._translate3d('0px', e.detail.dy + 'px', '0px', this.$.nob);
+          break;
+        case 'track':
+          if (this.tracking) {
+            var val = Math.ceil(e.detail.dy / this.sensitivity) * -1;
+            this.value = Math.max(this.min, Math.min(this.max, val));
+            this._translate3d('0px', e.detail.dy + 'px', '0px', this.$.nob);
+          }
+          break;
+        case 'end':
+          if (this.tracking) {
+            this.$.nob.style.transition = 'transform 120ms ease-in-out';
+            this._setTracking(false);
+            this._translate3d('0px', '0px', '0px', this.$.nob);
+            this.$.nob.addEventListener('transitionend', this._boundSnapBackEnd);
+          }
+          break;
+      }
+    }
+
+    _snapBackEnd(e) {
+      if (e.target !== this.$.nob) {
+        return;
+      }
+      this.$.nob.style.transition = '';
+      this.$.nob.removeEventListener('transitionend', this._boundSnapBackEnd);
+    }
+
+    _translate3d(x, y, z, node) {
+      node = (node || this);
+      const transformText = 'translate3d(' + x + ',' + y + ',' + z + ')';
+      node.style.webkitTransform = transformText;
+      node.style.transform = transformText;
+    }
+  }
+
+  window.customElements.define(WNumberPicker.is, WNumberPicker);
+</script>

@@ -13,6 +13,7 @@ Copyright (c) 2017 Peter Kaske
 <link rel="import" href="w-sortable.html">
 <link rel="import" href="w-swipe-action.html">
 <link rel="import" href="w-day-selector.html">
+<link rel="import" href="w-number-picker.html">
 <link rel="import" href="shared-styles.html">
 
 <!--
@@ -154,7 +155,8 @@ Manage sessions for a workout plan.
               </div>
               <div class="content">
                 <iron-icon class="ex-handle" icon="wi:drag-vertical"></iron-icon>
-                <div>[[ex.name]]</div>
+                <div class="flex">[[ex.name]]</div>
+                <div><w-number-picker min="1" max="100"></w-number-picker> Sets</div>
               </div>
             </w-swipe-action>
           </template>

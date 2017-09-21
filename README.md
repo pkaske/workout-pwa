@@ -37,6 +37,6 @@ Currently no sync to any server happens.
   "sessions": [{
     "name": "Leg day",
     "days": [ 1, 4 ],
-    "exercises": [ "UUID1", "UUID2" ]
+    "exercises": [ { "id": "UUID1", "sets": 3 }, { "id": "UUID2", "sets": 3 } ]
   }]
 }
