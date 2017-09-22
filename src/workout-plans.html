@@ -47,7 +47,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
 
     <template id="planList" is="dom-repeat" items="[[plans]]" as="plan">
-      <w-swipe-action threshold="150" class="item" data-id$="[[plan._id]]" on-action-triggered="_actionTriggered">
+      <w-swipe-action threshold="150" class="item" data-id$="[[plan._id]]" on-tap="_onItemTap" on-action-triggered="_actionTriggered">
         <div slot="left-action">
           <div>[[__('delete')]]</div>
         </div>
@@ -168,6 +168,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _submitWorkoutForm() {
         this.$.workoutForm.submit();
+      }
+
+      _onItemTap(e) {
+        this._actionTriggered({ target: this._closest(e.target, 'w-swipe-action', true), detail: 'right' });
       }
 
       _actionTriggered(e) {

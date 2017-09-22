@@ -152,7 +152,7 @@ Manage sessions for a workout plan.
         </label>
         <w-sortable id="exList" handle=".ex-handle" selector="w-swipe-action" on-items-rearranged="_exercisesRearranged">
           <template is="dom-repeat" items="[[_getExersices(_selExes.*)]]" as="ex">
-            <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex._id]]" on-action-triggered="_exActionTriggered" on-swipe-start="_checkIfSwipeEnabled">
+            <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex.id]]" on-action-triggered="_exActionTriggered" on-swipe-start="_checkIfSwipeEnabled">
               <div slot="left-action">
                 <div>[[__('delete')]]</div>
               </div>
@@ -258,10 +258,16 @@ Manage sessions for a workout plan.
     }
 
     get value() {
+      const exes = this._selExes.map(ex => {
+        ex.sets = this.shadowRoot
+          .querySelector('.ex-item[data-id="' + ex.id + '"]')
+          .querySelector('w-number-picker').value;
+        return ex;
+      });
       return {
         name: this.$.name.value,
         days: this.$.days.value,
-        exercises: this._selExes.slice(0)
+        exercises: exes
       };
     }
 
@@ -292,7 +298,7 @@ Manage sessions for a workout plan.
 
     _getExersices() {
       const list = [];
-      for (const ex of this._selExes) {
+      this._selExes.forEach(ex => {
         const exercise = this.exercisesMap.get(ex.id);
         if (exercise) {
           list.push({
@@ -301,7 +307,7 @@ Manage sessions for a workout plan.
             sets: ex.sets || 1
           });
         }
-      }
+      });
       return list;
     }
 
@@ -342,9 +348,9 @@ Manage sessions for a workout plan.
     }
 
     _findExerciseById(id) {
-      for(ex of this._selExes) {
-        if (ex.id === id) {
-          return ex;
+      for(let i = 0, li = this._selExes.length; i < li; ++i) {
+        if (this._selExes[i].id === id) {
+          return this._selExes[i];
         }
       }
     }

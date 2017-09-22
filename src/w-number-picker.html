@@ -276,13 +276,14 @@ Helps to quickly select a number with just one touch.
     _handleTrack(e) {
       switch (e.detail.state) {
         case 'start':
+          this._startingOffset = this.value;
           this._setTracking(true);
           this.dispatchEvent(new CustomEvent('tracking-state', { detail: true, bubbles: true, composed: true }));
           this._translate3d('0px', e.detail.dy + 'px', '0px', this.$.nob);
           break;
         case 'track':
           if (this.tracking) {
-            var val = Math.ceil(e.detail.dy / this.sensitivity) * -1;
+            var val = this._startingOffset + (Math.ceil(e.detail.dy / this.sensitivity) * -1);
             this.value = Math.max(this.min, Math.min(this.max, val));
             this._translate3d('0px', e.detail.dy + 'px', '0px', this.$.nob);
           }
