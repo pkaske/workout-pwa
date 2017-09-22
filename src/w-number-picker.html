@@ -30,7 +30,7 @@ Helps to quickly select a number with just one touch.
         width: 32px;
         height: 32px;
         transform: translate3d(0, 0, 0);
-        @apply --layout-horizontal;
+        @apply --layout-vertical;
         @apply --layout-center-center;
       }
 
@@ -40,7 +40,7 @@ Helps to quickly select a number with just one touch.
         right: 0;
         top: 0;
         bottom: 0;
-        background-color: var(--pc-600);
+        background-color: var(--pc-300);
         border-radius: 50%;
         -webkit-transition: background-color 280ms ease-in-out;
         -moz-transition: background-color 280ms ease-in-out;
@@ -54,11 +54,17 @@ Helps to quickly select a number with just one touch.
         transform: scale(1.3);
       }
 
+      :host([tracking]) .nob-bubble > div {
+        visibility: hidden;
+      }
+
       #info {
         -webkit-transition: transform 280ms ease-in-out, opacity 200ms ease-in-out;
         -moz-transition: transform 280ms ease-in-out, opacity 200ms ease-in-out;
         transition: transform 280ms ease-in-out, opacity 200ms ease-in-out;
         transform: translateX(-80%);
+        pointer-events: none;
+        opacity: 0;
       }
 
       :host([bubble-right]) #info {
@@ -95,10 +101,128 @@ Helps to quickly select a number with just one touch.
       :host([tracking][bubble-right]) #info {
         transform: translateX(140%);
       }
+
+      #rectTop,
+      #rectBottom {
+        width: 0;
+        height: 0;
+        border-style: solid;
+        position: absolute;
+        opacity: 0;
+      }
+
+      #rectTop {
+        border-width: 0 6px 8px 6px;
+        border-color: transparent transparent var(--pc-300) transparent;
+        top: -10px;
+      }
+
+      #rectBottom {
+        border-width: 8px 6px 0 6px;
+        border-color: var(--pc-300) transparent transparent transparent;
+        bottom: -10px;
+      }
+
+      #rectBottom.show,
+      #rectTop.show {
+        opacity: 1;
+      }
+
+      .arrow-up{
+        animation: aniup ease-out 0.5s;
+        animation-iteration-count: 3;
+        transform-origin: 50% 50%;
+        -webkit-animation: aniup ease-out 0.5s;
+        -webkit-animation-iteration-count: 3;
+        -webkit-transform-origin: 50% 50%;
+        -ms-animation: aniup ease-out 0.5s;
+        -ms-animation-iteration-count: 3;
+        -ms-transform-origin: 50% 50%;
+      }
+
+      .arrow-down{
+        animation: anidown ease-out 0.5s;
+        animation-iteration-count: 3;
+        transform-origin: 50% 50%;
+        -webkit-animation: anidown ease-out 0.5s;
+        -webkit-animation-iteration-count: 3;
+        -webkit-transform-origin: 50% 50%;
+        -ms-animation: anidown ease-out 0.5s;
+        -ms-animation-iteration-count: 3;
+        -ms-transform-origin: 50% 50%;
+      }
+
+      @keyframes aniup{
+        0% {
+          opacity:1;
+          transform:  translate(0px,0px)  ;
+        }
+        100% {
+          opacity:0;
+          transform:  translate(0px,-20px)  ;
+        }
+      }
+
+      @-webkit-keyframes aniup {
+        0% {
+          opacity:1;
+          -webkit-transform:  translate(0px,0px)  ;
+        }
+        100% {
+          opacity:0;
+          -webkit-transform:  translate(0px,-20px)  ;
+        }
+      }
+
+      @-ms-keyframes aniup {
+        0% {
+          opacity:1;
+          -ms-transform:  translate(0px,0px)  ;
+        }
+        100% {
+          opacity:0;
+          -ms-transform:  translate(0px,-20px)  ;
+        }
+      }
+
+      @keyframes anidown{
+        0% {
+          opacity:1;
+          transform:  translate(0px,0px)  ;
+        }
+        100% {
+          opacity:0;
+          transform:  translate(0px,20px)  ;
+        }
+      }
+
+      @-webkit-keyframes anidown {
+        0% {
+          opacity:1;
+          -webkit-transform:  translate(0px,0px)  ;
+        }
+        100% {
+          opacity:0;
+          -webkit-transform:  translate(0px,20px)  ;
+        }
+      }
+
+      @-ms-keyframes anidown {
+        0% {
+          opacity:1;
+          -ms-transform:  translate(0px,0px)  ;
+        }
+        100% {
+          opacity:0;
+          -ms-transform:  translate(0px,20px)  ;
+        }
+      }
     </style>
 
-    <div id="nob" on-track="_handleTrack">
+    <div id="nob" on-track="_handleTrack" on-tap="_playHelpAni">
+      <div id="rectTop"></div>
       <div class="nob-bubble"><div>[[value]]</div></div>
+      <div id="rectBottom"></div>
       <div id="info">
         <div class="info-bubble">
           <div>[[value]]</div>
@@ -146,12 +270,14 @@ Helps to quickly select a number with just one touch.
     constructor() {
       super();
       this._boundSnapBackEnd = this._snapBackEnd.bind(this);
+      this._boundHelpAniEnd = this._helpAniEnd.bind(this);
     }
 
     _handleTrack(e) {
       switch (e.detail.state) {
         case 'start':
           this._setTracking(true);
+          this.dispatchEvent(new CustomEvent('tracking-state', { detail: true, bubbles: true, composed: true }));
           this._translate3d('0px', e.detail.dy + 'px', '0px', this.$.nob);
           break;
         case 'track':
@@ -165,6 +291,7 @@ Helps to quickly select a number with just one touch.
           if (this.tracking) {
             this.$.nob.style.transition = 'transform 120ms ease-in-out';
             this._setTracking(false);
+            this.dispatchEvent(new CustomEvent('tracking-state', { detail: false, bubbles: true, composed: true }));
             this._translate3d('0px', '0px', '0px', this.$.nob);
             this.$.nob.addEventListener('transitionend', this._boundSnapBackEnd);
           }
@@ -185,6 +312,24 @@ Helps to quickly select a number with just one touch.
       const transformText = 'translate3d(' + x + ',' + y + ',' + z + ')';
       node.style.webkitTransform = transformText;
       node.style.transform = transformText;
+    }
+
+    _playHelpAni() {
+      this.dispatchEvent(new CustomEvent('helper-animation', { detail: true, bubbles: true, composed: true }));
+      this.$.rectBottom.classList.add('show');
+      this.$.rectBottom.classList.add('arrow-down');
+      this.$.rectTop.classList.add('show');
+      this.$.rectTop.classList.add('arrow-up');
+      this.$.rectBottom.addEventListener('animationend', this._boundHelpAniEnd);
+    }
+
+    _helpAniEnd(e) {
+      this.$.rectBottom.classList.remove('show');
+      this.$.rectBottom.classList.remove('arrow-down');
+      this.$.rectTop.classList.remove('show');
+      this.$.rectTop.classList.remove('arrow-up');
+      this.$.rectBottom.removeEventListener('animationend', this._boundHelpAniEnd);
+      this.dispatchEvent(new CustomEvent('helper-animation', { detail: false, bubbles: true, composed: true }));
     }
   }
 

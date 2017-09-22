@@ -55,7 +55,6 @@ Name | Type | Default | Description
 
     .wrap {
       position: relative;
-      overflow: hidden;
     }
 
     #content {
@@ -194,6 +193,8 @@ Name | Type | Default | Description
     _handleTrack(e) {
       switch (e.detail.state) {
         case 'start':
+          if (Math.abs(e.detail.dx) < Math.abs(e.detail.dy)) return;
+
           const customEv = new CustomEvent('swipe-start', { detail: null, bubbles: true, composed: true, cancelable: true })
           this.dispatchEvent(customEv);
           if (customEv.defaultPrevented) {

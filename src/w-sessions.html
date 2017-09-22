@@ -201,7 +201,7 @@ Manage sessions for a workout plan.
     _exSelected(e) {
       const data = this.$.selExForm.serializeForm();
       e.target.hide();
-      this._selectedExercisesCb(data.exIds);
+      this._selectedExercisesCb(Array.isArray(data.exIds) ? data.exIds : [ data.exIds ]);
       this.$.selExPanel.querySelectorAll('paper-checkbox').forEach(el => el.checked = false);
     }
 

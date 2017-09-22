@@ -27,7 +27,8 @@
     "add-session": "ADD SESSION",
     "new-session-name": "Session {no}",
     "select-exercises-headline": "SELECT EXERCISES",
-    "confirm-delete-session": "Delete this session?"
+    "confirm-delete-session": "Delete this session?",
+    "ex-sets": "Sets"
   },
   "de": {
     "app-name": "Workout PWA",
@@ -57,6 +58,7 @@
     "add-session": "NEUE EINHEIT",
     "new-session-name": "Session {no}",
     "select-exercises-headline": "ÜBUNGEN WÄHLEN",
-    "confirm-delete-session": "Diese Einheit löschen?"
+    "confirm-delete-session": "Diese Einheit löschen?",
+    "ex-sets": "Sets"
   }
 }

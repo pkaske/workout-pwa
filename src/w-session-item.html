@@ -14,6 +14,7 @@ Copyright (c) 2017 Peter Kaske
 <link rel="import" href="w-swipe-action.html">
 <link rel="import" href="w-day-selector.html">
 <link rel="import" href="w-number-picker.html">
+<link rel="import" href="helpers-mixin.html">
 <link rel="import" href="shared-styles.html">
 
 <!--
@@ -125,9 +126,14 @@ Manage sessions for a workout plan.
       }
 
       w-swipe-action {
+        position: relative;
         --w-swipe-action-active-right: {
           background-color: var(--red-900);
         };
+      }
+
+      w-number-picker {
+        margin-right: 10px;
       }
     </style>
 
@@ -145,7 +151,7 @@ Manage sessions for a workout plan.
           <paper-icon-button class="smaller" icon="wi:plus" on-tap="_requestExercises"></paper-icon-button>
         </label>
         <w-sortable id="exList" handle=".ex-handle" selector="w-swipe-action" on-items-rearranged="_exercisesRearranged">
-          <template is="dom-repeat" items="[[_getExersices(_selExes)]]" as="ex">
+          <template is="dom-repeat" items="[[_getExersices(_selExes.*)]]" as="ex">
             <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex._id]]" on-action-triggered="_exActionTriggered" on-swipe-start="_checkIfSwipeEnabled">
               <div slot="left-action">
                 <div>[[__('delete')]]</div>
@@ -156,7 +162,15 @@ Manage sessions for a workout plan.
               <div class="content">
                 <iron-icon class="ex-handle" icon="wi:drag-vertical"></iron-icon>
                 <div class="flex">[[ex.name]]</div>
-                <div><w-number-picker min="1" max="100"></w-number-picker> Sets</div>
+                <div>
+                  <w-number-picker
+                    min="1"
+                    max="100"
+                    value="[[ex.sets]]"
+                    on-tracking-state="_modItemZindex"
+                    on-helper-animation="_modItemZindex"></w-number-picker>
+                  <span> [[__('ex-sets')]]</span>
+                </div>
               </div>
             </w-swipe-action>
           </template>
@@ -178,7 +192,7 @@ Manage sessions for a workout plan.
   </template>
 </dom-module>
 <script>
-  class WSessionItem extends Polymer.GestureEventListeners(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element)) {
+  class WSessionItem extends Polymer.GestureEventListeners(HelpersMixin(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element))) {
     static get is() { return 'w-session-item'; }
 
     static get properties() {
@@ -258,8 +272,13 @@ Manage sessions for a workout plan.
     _requestExercises() {
       this.dispatchEvent(new CustomEvent('select-exercises', { detail: {
         cb: data => {
-          // Neat trick to make array items unique with the spread operator and Set.
-          this.set('_selExes', [...new Set(this._selExes.concat(data))]);
+          const currentExIds = this._extractExersiceIds();
+
+          data.forEach(id => {
+            if (currentExIds.indexOf(id) > -1) return;
+            this.push('_selExes', { id: id, sets: 1 });
+          });
+
           if (this._selExes.length > 0) {
             this.$.exWrap.removeAttribute('invalid');
           }
@@ -267,10 +286,21 @@ Manage sessions for a workout plan.
       }, bubbles: true, composed: true }));
     }
 
+    _extractExersiceIds() {
+      return this._selExes.map(ex => ex.id);
+    }
+
     _getExersices() {
       const list = [];
-      for (const id of this._selExes) {
-        list.push(this.exercisesMap.get(id));
+      for (const ex of this._selExes) {
+        const exercise = this.exercisesMap.get(ex.id);
+        if (exercise) {
+          list.push({
+            id: ex.id,
+            name: exercise.name,
+            sets: ex.sets || 1
+          });
+        }
       }
       return list;
     }
@@ -288,7 +318,7 @@ Manage sessions for a workout plan.
       const item = e.target;
       const id = item.getAttribute('data-id');
       item.removeEventListener('transitionend', this._boundFinishRemove);
-      this._selExes = this._selExes.filter(exId => exId !== id);
+      this._selExes = this._selExes.filter(ex => ex.id !== id);
       item.resetAnimation();
       item.classList.remove('animated');
       item.style.transform = 'none';
@@ -296,15 +326,27 @@ Manage sessions for a workout plan.
     }
 
     _exercisesRearranged(e) {
-      this._selExes = e.detail.newOrder.map(item => { 
-        return item.getAttribute('data-id');
+      this._selExes = e.detail.newOrder.map(item => {
+        return this._findExerciseById(item.getAttribute('data-id'));
       });
     } 
 
-    _checkIfSwipeEnabled(e) { 
+    _checkIfSwipeEnabled(e) {
+      if (e.target.querySelector('w-number-picker').tracking) {
+        e.preventDefault();
+      }
+
       if (this.$.exList.sorting) { 
         e.preventDefault();
       } 
+    }
+
+    _findExerciseById(id) {
+      for(ex of this._selExes) {
+        if (ex.id === id) {
+          return ex;
+        }
+      }
     }
 
     _hasExercises(count) {
@@ -322,6 +364,11 @@ Manage sessions for a workout plan.
     _deleteSession() {
       this.$.confirmDelete.removeAttribute('show');
       this.dispatchEvent(new CustomEvent('delete-session', { detail: this.index, bubbles: true, composed: true }));
+    }
+
+    _modItemZindex(e) {
+      var item = this._closest(e.target, '.ex-item', true);
+      item.style.zIndex = e.detail ? '2' : '';
     }
   }
 
