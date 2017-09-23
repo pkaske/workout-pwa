@@ -153,7 +153,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             attr-for-selected="name"
             fallback-selection="404"
             role="main">
-          <workout-home active="[[_eq(page, 'home')]]" language="[[language]]" resources="[[resources]]" name="home"></workout-home>
+          <workout-home
+            active="[[_eq(page, 'home')]]"
+            language="[[language]]"
+            resources="[[resources]]"
+            exercises="[[_exercises]]"
+            exercises-map="[[_exercisesMap]]"
+            active-plans="[[_activePlans]]"
+            name="home"></workout-home>
           <workout-plans
             active="[[_eq(page, 'plans')]]"
             language="[[language]]"
@@ -261,6 +268,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         document.addEventListener('plans-changed', e => {
           this._plans = e.detail.docs;
+          this._activePlans = this._plans.filter(plan => plan.active);
         });
       }
 

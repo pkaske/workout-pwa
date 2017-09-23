@@ -139,25 +139,25 @@ Manage sessions for a workout plan.
 
     <div class="wrap">
       <header>
-        <paper-input id="name" value="[[item.name]]" label="[[__('name')]]" no-label-float required></paper-input>
+        <paper-input id="name" value="[[item.name]]" label="[[localize('name')]]" no-label-float required></paper-input>
         <paper-icon-button class="smaller" icon="wi:close" on-tap="_confirmDeleteSession"></paper-icon-button>
       </header>
-      <label>[[__('workout-day')]]</label>
+      <label>[[localize('workout-day')]]</label>
       <w-day-selector id="days" value="[[item.days]]" resources="[[resources]]"></w-day-selector>
       
       <div id="exWrap">
         <label class="horizontal">
-          <div class="flex">[[__('title-exercises')]]</div>
+          <div class="flex">[[localize('title-exercises')]]</div>
           <paper-icon-button class="smaller" icon="wi:plus" on-tap="_requestExercises"></paper-icon-button>
         </label>
         <w-sortable id="exList" handle=".ex-handle" selector="w-swipe-action" on-items-rearranged="_exercisesRearranged">
-          <template is="dom-repeat" items="[[_getExersices(_selExes.*)]]" as="ex">
+          <template is="dom-repeat" items="[[_resolveExersices('_selExes', _selExes.*)]]" as="ex">
             <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex.id]]" on-action-triggered="_exActionTriggered" on-swipe-start="_checkIfSwipeEnabled">
               <div slot="left-action">
-                <div>[[__('delete')]]</div>
+                <div>[[localize('delete')]]</div>
               </div>
               <div slot="right-action">
-                <div>[[__('delete')]]</div>
+                <div>[[localize('delete')]]</div>
               </div>
               <div class="content">
                 <iron-icon class="ex-handle" icon="wi:drag-vertical"></iron-icon>
@@ -169,7 +169,7 @@ Manage sessions for a workout plan.
                     value="[[ex.sets]]"
                     on-tracking-state="_modItemZindex"
                     on-helper-animation="_modItemZindex"></w-number-picker>
-                  <span> [[__('ex-sets')]]</span>
+                  <span> [[localize('ex-sets')]]</span>
                 </div>
               </div>
             </w-swipe-action>
@@ -181,7 +181,7 @@ Manage sessions for a workout plan.
 
       <div id="confirmDelete">
         <div class="content">
-          <p>[[__('confirm-delete-session')]]</p>
+          <p>[[localize('confirm-delete-session')]]</p>
         </div>
         <div class="horizontal justified">
           <paper-icon-button icon="wi:arrow-back" on-tap="_cancelDeleteSession"></paper-icon-button>
@@ -294,21 +294,6 @@ Manage sessions for a workout plan.
 
     _extractExersiceIds() {
       return this._selExes.map(ex => ex.id);
-    }
-
-    _getExersices() {
-      const list = [];
-      this._selExes.forEach(ex => {
-        const exercise = this.exercisesMap.get(ex.id);
-        if (exercise) {
-          list.push({
-            id: ex.id,
-            name: exercise.name,
-            sets: ex.sets || 1
-          });
-        }
-      });
-      return list;
     }
 
     _exActionTriggered(e) {

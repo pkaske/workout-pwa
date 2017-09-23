@@ -34,6 +34,7 @@ Currently no sync to any server happens.
   "_id": "PouchDB Doc ID",
   "_rev": "PouchDB Rev",
   "name": "Workout plan name",
+  "active": true,
   "sessions": [{
     "name": "Leg day",
     "days": [ 1, 4 ],

@@ -123,6 +123,11 @@ Displays a panel that slide up from the bottom.
         static set counter(val) {
           panelCounter = val;
         }
+
+        constructor() {
+          super();
+          this._boundHide = this.hide.bind(this);
+        }
   
         connectedCallback() {
           super.connectedCallback();
@@ -135,6 +140,9 @@ Displays a panel that slide up from the bottom.
           this.visible = true;
           Polymer.Gestures.addListener('tap', this._boundDismissOnOutsideClick);
           this.dispatchEvent(new CustomEvent('swipe-panel-open', { detail: null, bubbles: true, composed: true }));
+
+          window.history.pushState({ is: 'w-slide-up-panel' }, null);
+          window.addEventListener('popstate', this._boundHide);
         }
         
         hide() {
@@ -142,9 +150,14 @@ Displays a panel that slide up from the bottom.
             WSlideUpPanel.counter--;
             this.addEventListener('transitionend', this._boundOnClosed);
             this.visible = false;
+
+            window.removeEventListener('popstate', this._boundHide);
+            if (window.history.state && window.history.state.is === 'w-slide-up-panel') {
+              window.history.back();
+            }
           }
         }
-        
+
         _dismissOnOutsideClick(e) {
           if (!this._closest(e.composedPath()[0], this.tagName, true)) {
             this.hide();

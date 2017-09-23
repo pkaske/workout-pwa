@@ -27,11 +27,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
-    <label class="margin-top-10">[[__('create-exercise')]]</label>
+    <label class="margin-top-10">[[localize('create-exercise')]]</label>
     <iron-form id="form" class="margin-bottom-10">
       <form>
         <div class="horizontal">
-          <paper-input name="name" label="[[__('name')]]" no-label-float required></paper-input>
+          <paper-input name="name" label="[[localize('name')]]" no-label-float required></paper-input>
           <paper-icon-button icon="wi:plus" on-tap="_submitForm"></paper-icon-button>
         </div>
       </form>
@@ -41,10 +41,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <template id="exerciseList" is="dom-repeat" items="[[exercises]]" as="ex">
         <w-swipe-action threshold="150" data-id$="[[ex._id]]" on-action-triggered="_actionTriggered">
           <div slot="left-action">
-            <div>[[__('delete')]]</div>
+            <div>[[localize('delete')]]</div>
           </div>
           <div slot="right-action">
-              <div>[[__('edit')]]</div>
+              <div>[[localize('edit')]]</div>
           </div>
           <div class="content">
             <div>[[ex.name]]</div>
@@ -56,28 +56,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div class="empty" hidden$="[[_hasExercises(exercises.length)]]">
       <div>
         <iron-icon icon="wi:dumbbell"></iron-icon>
-        <p>[[__('no-exercises-jet')]]</p>
+        <p>[[localize('no-exercises-jet')]]</p>
       </div>
     </div>
 
     <w-slide-up-panel full id="editExercisePanel">
-      <h1 slot="header">[[__('edit-exercise-header')]]</h1>
+      <h1 slot="header">[[localize('edit-exercise-header')]]</h1>
       <paper-icon-button icon="wi:close" slot="header-right" dismiss-panel></paper-icon-button>
       <div>
-        <label>[[__('edit-exercise-name')]]</label>
+        <label>[[localize('edit-exercise-name')]]</label>
         <iron-form id="editForm">
           <form>
             <div class="horizontal">
               <input type="hidden" name="_id" value="[[_selExercise._id]]">
               <input type="hidden" name="_rev" value="[[_selExercise._rev]]">
-              <paper-input name="name" value="[[_selExercise.name]]" label="[[__('name')]]" no-label-float required></paper-input>
+              <paper-input name="name" value="[[_selExercise.name]]" label="[[localize('name')]]" no-label-float required></paper-input>
             </div>
           </form>
         </iron-form>
       </div>
       <div slot="actions">
-        <button danger dismiss-panel>[[__('cancel')]]</button>
-        <button confirm on-tap="_submitEditForm">[[__('save')]]</button>
+        <button danger dismiss-panel>[[localize('cancel')]]</button>
+        <button confirm on-tap="_submitEditForm">[[localize('save')]]</button>
       </div>
     </w-slide-up-panel>
   </template>
@@ -88,8 +88,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       static get properties() {
         return {
-          title: { type: String, value: 'EXERCISES' },
-
           exercises: {
             type: Array,
             value: function() {

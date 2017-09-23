@@ -90,14 +90,14 @@ Manage sessions for a workout plan.
       </template>
 
       <div class="btn-wrap">
-        <button class="add" on-tap="_addSession">[[__('add-session')]]</button>
+        <button class="add" on-tap="_addSession">[[localize('add-session')]]</button>
       </div>
     </div>
 
     <!-- Exercise Selector Panel -->
     <w-slide-up-panel full id="selExPanel" on-swipe-panel-confirmed="_exSelected">
       <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
-      <h1 slot="header">[[__('select-exercises-headline')]]</h1>
+      <h1 slot="header">[[localize('select-exercises-headline')]]</h1>
       <paper-icon-button icon="wi:check" slot="header-right" confirm-panel></paper-icon-button>
       <div>
         <iron-form id="selExForm" class="margin-top-10">
@@ -188,7 +188,7 @@ Manage sessions for a workout plan.
     }
 
     _addSession() {
-      this.push('sessions', { name: this.__('new-session-name', 'no', this.sessions.length + 1) });
+      this.push('sessions', { name: this.localize('new-session-name', 'no', this.sessions.length + 1) });
       this.removeAttribute('invalid');
     }
 

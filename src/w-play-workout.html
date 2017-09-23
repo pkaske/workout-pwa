@@ -1,0 +1,52 @@
+<!--
+@license
+Copyright (c) 2017 Peter Kaske
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="w-slide-up-panel.html">
+<link rel="import" href="view-mixin.html">
+<link rel="import" href="helpers-mixin.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="w-play-workout">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+    </style>
+
+    <w-slide-up-panel full id="panel">
+      <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
+      <h1 slot="header">[[_session.name]]</h1>
+      <div>
+        
+      </div>
+    </w-slide-up-panel>
+  </template>
+
+  <script>
+    class WPlayWorkout extends Polymer.GestureEventListeners(HelpersMixin(ViewMixin(Polymer.Element))) {
+      static get is() { return 'w-play-workout'; }
+
+      static get properties() {
+        return {
+          _session: {
+            type: Object,
+            value: null
+          }
+        };
+      }
+
+      start(session) {
+        this._session = session;
+        this.$.panel.show();
+      }
+    }
+
+    window.customElements.define(WPlayWorkout.is, WPlayWorkout);
+  </script>
+</dom-module>

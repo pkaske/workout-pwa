@@ -9,7 +9,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="w-play-workout.html">
 <link rel="import" href="view-mixin.html">
+<link rel="import" href="helpers-mixin.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="workout-home">
@@ -17,29 +21,133 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="shared-styles">
       :host {
         display: block;
+      }
 
+      .todays-session {
+        background: var(--pc-600);
+      }
+
+      .todays-session header {
         padding: 10px;
+      }
+
+      .todays-session h2 {
+        font-size: 18px;
+        font-weight: normal;
+        margin: 0;
+        padding: 0;
+      }
+
+      .todays-session header span {
+        font-size: 12px;
+        color: var(--pc-300);
+      }
+
+      .todays-session header paper-icon-button {
+        height: 48px;
+        width: 48px;
+      }
+
+      .todays-session .content {
+        background: var(--pc-850);
+        padding: 10px;
+      }
+
+      .todays-session .content .ex-item {
+        padding: 10px 0;
       }
     </style>
 
-    <div class="card">
-      <h1>HOME</h1>
-      <p>Ut labores minimum atomorum pro. Laudem tibique ut has.</p>
-      <p>Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Cu mei vide viris gloriatur, at populo eripuit sit.</p>
-    </div>
+    <!-- List todays sessions -->
+
+    <template id="sessionList" is="dom-repeat" items="[[_todaysSessions]]" as="session">
+      <section class="todays-session margin-top-25">
+        <header class="horizontal justified">
+          <div>
+            <span>[[localize('today')]]</span>
+            <h2>[[session.plan.name]] - [[session.name]]</h2>
+          </div>
+          <div>
+            <paper-icon-button icon="wi:play-circle" on-tap="_playSession"></paper-icon-button>
+          </div>
+        </header>
+        <div class="content">
+          <div class="list-exes">
+            <template is="dom-repeat" items="[[_resolveExersices(session.exercises)]]" as="ex">
+              <div class="ex-item horizontal justified">
+                <div>[[ex.name]]</div><div>[[ex.sets]] [[localize('ex-sets')]]</div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <w-play-workout id="player"></w-play-workout>
   </template>
 
   <script>
-    class MyView1 extends ViewMixin(Polymer.Element) {
+    class WorkoutHome extends Polymer.GestureEventListeners(HelpersMixin(ViewMixin(Polymer.Element))) {
       static get is() { return 'workout-home'; }
 
       static get properties() {
         return {
-          title: { type: String, value: 'title-home' }
+          activePlans: {
+            type: Array,
+            value: function() {
+              return [];
+            }
+          },
+          exercises: {
+            type: Array,
+            value: function() {
+              return [];
+            }
+          },
+          exercisesMap: {
+            type: Map,
+            value: null
+          }
         };
+      }
+
+      static get observers() {
+        return [
+          '_activePlansChanged(activePlans.*)'
+        ];
+      }
+
+      get today() {
+        return new Date().getDay();
+      }
+
+      // Build an array of session objects scheduled for today.
+      // Each session object holds the complete plan it belongs to at the `plan` property.
+      _activePlansChanged() {
+        const list = [];
+        this.activePlans.forEach(plan => {
+          const todaysSessions = plan.sessions.filter(s => this._isToday(s));
+          todaysSessions.map(s => {
+            s.plan = plan;
+          });
+          list.push(...todaysSessions);
+        });
+        this._todaysSessions = list;
+      }
+
+      _getTodaysSession(plan) {
+        return plan.sessions.find(s => this._isToday(s));
+      }
+
+      _isToday(session) {
+        return session.days.indexOf(this.today) > -1;
+      }
+
+      _playSession(e) {
+        this.$.player.start(this.$.sessionList.modelForElement(e.target).session);
       }
     }
 
-    window.customElements.define(MyView1.is, MyView1);
+    window.customElements.define(WorkoutHome.is, WorkoutHome);
   </script>
 </dom-module>

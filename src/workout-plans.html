@@ -13,6 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/iron-form/iron-form.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="w-slide-up-panel.html">
 <link rel="import" href="w-sessions.html">
 <link rel="import" href="view-mixin.html">
@@ -49,10 +50,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <template id="planList" is="dom-repeat" items="[[plans]]" as="plan">
       <w-swipe-action threshold="150" class="item" data-id$="[[plan._id]]" on-tap="_onItemTap" on-action-triggered="_actionTriggered">
         <div slot="left-action">
-          <div>[[__('delete')]]</div>
+          <div>[[localize('delete')]]</div>
         </div>
         <div slot="right-action">
-            <div>[[__('edit')]]</div>
+            <div>[[localize('edit')]]</div>
         </div>
         <div class="content">
           <div>[[plan.name]]</div>
@@ -63,13 +64,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div class="empty" hidden$="[[_hasPlans(plans.length)]]">
       <div>
         <iron-icon icon="wi:clipboard-text"></iron-icon>
-        <p>[[__('no-workout-plans-jet')]]</p>
+        <p>[[localize('no-workout-plans-jet')]]</p>
       </div>
     </div>
 
     <w-slide-up-panel full id="workoutPanel">
       <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
-      <h1 slot="header">[[__('new-workout-headline')]]</h1>
+      <h1 slot="header">[[_showHeadline(_selPlan)]]</h1>
       <paper-icon-button icon="wi:check" slot="header-right" on-tap="_submitWorkoutForm" confirm-panel></paper-icon-button>
       <div>
         <iron-form id="workoutForm" class="margin-top-10">
@@ -77,7 +78,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div class="horizontal">
               <input type="hidden" name="_id" value="[[_selPlan._id]]">
               <input type="hidden" name="_rev" value="[[_selPlan._rev]]">
-              <paper-input name="name" value="[[_selPlan.name]]" label="[[__('workout-name')]]" no-label-float required></paper-input>
+              <paper-input name="name" value="[[_selPlan.name]]" label="[[localize('workout-name')]]" no-label-float required></paper-input>
+            </div>
+            <div class="form-section delimiter-top horizontal justified">
+              <span>[[localize('workout-active')]]</span>
+              <paper-toggle-button name="active" checked="[[_selPlan.active]]"></paper-toggle-button>
             </div>
             <div class="margin-top-25">
               <w-sessions name="sessions" sessions="[[_selPlan.sessions]]" exercises="[[exercises]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-sessions>
@@ -94,8 +99,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       static get properties() {
         return {
-          title: { type: String, value: 'WORKOUT PLANS' },
-
           headerAction: {
             type: Object,
             value: function() {
@@ -159,7 +162,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _resetWorkoutForm() {
         this.$.workoutForm.reset();
-        this._selPlan = { name: '' };
+        this._selPlan = { name: '', active: true };
       }
 
       _hasPlans() {
@@ -211,6 +214,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             item.style.transform = 'none';
             item.style.opacity = 1;
           });
+      }
+
+      _showHeadline() {
+        return this._selPlan._id ? this.localize('edit-workout-headline') : this.localize('new-workout-headline')
       }
     }
 

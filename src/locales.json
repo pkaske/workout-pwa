@@ -14,6 +14,7 @@
     "edit-exercise-name": "Enter new name",
     "edit-exercise-header": "EDIT EXERCISE",
     "new-workout-headline": "NEW WORKOUT PLAN",
+    "edit-workout-headline": "EDIT WORKOUT PLAN",
     "workout-name": "Name your plan",
     "no-workout-plans-jet": "Create your first workout plan",
     "monday-short": "Mo",
@@ -28,7 +29,9 @@
     "new-session-name": "Session {no}",
     "select-exercises-headline": "SELECT EXERCISES",
     "confirm-delete-session": "Delete this session?",
-    "ex-sets": "Sets"
+    "ex-sets": "Sets",
+    "workout-active": "Currently followed workout plan",
+    "today": "Today"
   },
   "de": {
     "app-name": "Workout PWA",
@@ -45,6 +48,7 @@
     "edit-exercise-name": "Neuer Name",
     "edit-exercise-header": "ÜBUNG BEARBEITEN",
     "new-workout-headline": "NEUER WORKOUT PLAN",
+    "edit-workout-headline": "WORKOUT PLAN BEARBEITEN",
     "workout-name": "Name deines Workouts",
     "no-workout-plans-jet": "Erstelle dein erstes Workout",
     "monday-short": "Mo",
@@ -59,6 +63,8 @@
     "new-session-name": "Session {no}",
     "select-exercises-headline": "ÜBUNGEN WÄHLEN",
     "confirm-delete-session": "Diese Einheit löschen?",
-    "ex-sets": "Sets"
+    "ex-sets": "Sets",
+    "workout-active": "Nach diesem Plan trainieren",
+    "today": "Heute"
   }
 }

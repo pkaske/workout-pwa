@@ -35,6 +35,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         display: none !important;
       }
 
+      .delimiter-top {
+        margin-top: 1px;
+      }
+
       .margin-top-10 {
         margin-top: 10px;
       }
@@ -94,6 +98,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         };
 
         @apply --layout-flex;
+      }
+
+      paper-toggle-button {
+        --paper-toggle-button-unchecked-bar-color: var(--pc-100);
+        --paper-toggle-button-unchecked-button-color: var(--pc-300);
+        --paper-toggle-button-checked-bar-color: var(--pc-100);
+        --paper-toggle-button-checked-button-color: var(--hl-400);
       }
 
       iron-form paper-icon-button {
@@ -211,6 +222,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .flex {
         @apply --layout-flex;
+      }
+
+      .form-section {
+        background: var(--pc-600);
+        padding: 20px 10px;
       }
     </style>
   </template>

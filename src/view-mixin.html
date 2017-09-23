@@ -41,10 +41,9 @@ ViewMixin = Polymer.dedupingMixin(function(superClass) {
       super();
       this._boundOnHeaderAction = this._onHeaderAction.bind(this);
     }
-
+    
     ready() {
       super.ready();
-      this.__ = this.localize;
     }
 
     _signalActive(state) {
