@@ -12,8 +12,9 @@ before_script:
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   - cd $CI_PROJECT_DIR
   - npm install
-  - npm i -g bower@1.7.9
+  - npm i -g bower@1.7.9 polymer-cli
   - bower i --allow-root
+  - polymer-cli build
 
 stage_deploy:
   only:
@@ -22,3 +23,4 @@ stage_deploy:
     - ssh-add <(echo "$PREVIEW_PRIVATE_KEY")
     - ssh -p22 $SSH_URL "rm -rf $DEST_PATH/*"
     - scp -P22 -r $CI_PROJECT_DIR/* $SSH_URL:$DEST_PATH
+    - ssh -p22 $SSH_URL "cp $DEST_PATH/src/scripts/exercise-handler.js $DEST_PATH/src/scripts/plan-handler.js $DEST_PATH/build/es6-unbundled/src/scripts/"

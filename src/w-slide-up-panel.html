@@ -126,7 +126,7 @@ Displays a panel that slide up from the bottom.
 
         constructor() {
           super();
-          this._boundHide = this.hide.bind(this);
+          this._boundHideOnHistoryBack = this._hideOnHistoryBack.bind(this);
         }
   
         connectedCallback() {
@@ -137,24 +137,29 @@ Displays a panel that slide up from the bottom.
   
         show() {
           WSlideUpPanel.counter++;
+          this._panelNo = WSlideUpPanel.counter;
           this.visible = true;
           Polymer.Gestures.addListener('tap', this._boundDismissOnOutsideClick);
           this.dispatchEvent(new CustomEvent('swipe-panel-open', { detail: null, bubbles: true, composed: true }));
 
-          window.history.pushState({ is: 'w-slide-up-panel' }, null);
-          window.addEventListener('popstate', this._boundHide);
+          window.history.pushState({ is: 'w-slide-up-panel' + this._panelNo }, null);
+          window.addEventListener('popstate', this._boundHideOnHistoryBack);
         }
         
         hide() {
           if (this.visible) {
-            WSlideUpPanel.counter--;
             this.addEventListener('transitionend', this._boundOnClosed);
             this.visible = false;
-
-            window.removeEventListener('popstate', this._boundHide);
-            if (window.history.state && window.history.state.is === 'w-slide-up-panel') {
+            window.removeEventListener('popstate', this._boundHideOnHistoryBack);
+            if (window.history.state.is === 'w-slide-up-panel' + this._panelNo) {
               window.history.back();
             }
+          }
+        }
+
+        _hideOnHistoryBack(e) {
+          if (this._panelNo === WSlideUpPanel.counter) {
+            this.hide();
           }
         }
 
@@ -167,6 +172,7 @@ Displays a panel that slide up from the bottom.
         
         _onClosed(e) {
           this.removeEventListener('transitionend', this._boundOnClosed);
+          WSlideUpPanel.counter--;
           this.dispatchEvent(new CustomEvent('swipe-panel-closed', { detail: null, bubbles: true, composed: true }));
         }
   
