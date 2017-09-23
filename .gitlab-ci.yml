@@ -14,7 +14,7 @@ before_script:
   - npm install
   - npm i -g bower@1.7.9 polymer-cli
   - bower i --allow-root
-  - polymer-cli build
+  - polymer build
 
 stage_deploy:
   only:
