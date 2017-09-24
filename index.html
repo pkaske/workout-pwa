@@ -71,6 +71,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             scope: Polymer.rootPath,
           });
         });
+
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.onstatechange = function(e) {
+            if (e.target.state === 'redundant') {
+              document.querySelector('workout-app').$.swRefreshToast.show();
+            }
+          };
+
+        }
       }
     </script>
 
@@ -79,6 +88,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <!-- Load your application shell -->
     <link rel="import" href="src/workout-app.html">
+
 
     <script src="src/scripts/pouchdb-6.3.4.min.js"></script>
     <script src="src/scripts/pouchdb.find.min.js"></script>
@@ -101,6 +111,5 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <noscript>
       Please enable JavaScript to view this website.
     </noscript>
-    <!-- Built with love using Polymer Starter Kit -->
   </body>
 </html>

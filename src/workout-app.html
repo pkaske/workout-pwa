@@ -21,15 +21,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="workout-icons.html">
 <link rel="import" href="shared-styles.html">
-
-<link rel="lazy-import" href="workout-home.html">
-<link rel="lazy-import" href="workout-plans.html">
-<link rel="lazy-import" href="workout-stats.html">
-<link rel="lazy-import" href="workout-404.html">
 
 <script src="scripts/exercise-handler.js"></script>
 <script src="scripts/plan-handler.js"></script>
@@ -115,6 +111,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #appHeader.lower-z {
         z-index: 0 !important;
       }
+
+      paper-toast button {
+        background: transparent;
+      }
     </style>
 
     <app-location route="{{route}}" url-space-regex="^[[rootPath]]"></app-location>
@@ -181,6 +181,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
+
+    <paper-toast id="swRefreshToast" duration="0">
+      <div class="horizontal justified">
+        <div>
+          [[localize('new-version-available')]]
+        </div>
+        <button on-tap="_reload">[[localize('reload')]]</button>
+      </div>
+    </paper-toast>
   </template>
 
   <script>
@@ -320,6 +329,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _headerActionTapped() {
         this.dispatchEvent(new CustomEvent('header-action', { detail: null, bubbles: true, composed: true }));
+      }
+
+      _reload() {
+        window.location.reload();
       }
     }
 

@@ -31,7 +31,9 @@
     "confirm-delete-session": "Delete this session?",
     "ex-sets": "Sets",
     "workout-active": "Currently followed workout plan",
-    "today": "Today"
+    "today": "Today",
+    "new-version-available": "New version is available",
+    "reload": "Reload"
   },
   "de": {
     "app-name": "Workout PWA",
@@ -65,6 +67,8 @@
     "confirm-delete-session": "Diese Einheit löschen?",
     "ex-sets": "Sets",
     "workout-active": "Nach diesem Plan trainieren",
-    "today": "Heute"
+    "today": "Heute",
+    "new-version-available": "New version is available",
+    "reload": "Neu laden"
   }
 }
