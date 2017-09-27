@@ -1,9 +1,12 @@
 {
   "en": {
     "app-name": "Workout PWA",
+    "nav-home": "HOME",
     "title-home": "READY TO WORKOUT?",
     "title-exercises": "EXERCISES",
     "title-plans": "WORKOUT PLANS",
+    "title-stats": "STATISTICS",
+    "title-settings": "SETTINGS",
     "name": "Name",
     "create-exercise": "CREATE EXERCISE",
     "delete": "DELETE",
@@ -40,6 +43,8 @@
     "title-home": "BEREIT FÜR DEIN WORKOUT?",
     "title-exercises": "ÜBUNGEN",
     "title-plans": "WORKOUTS",
+    "title-stats": "STATISTIK",
+    "title-settings": "EINSTELLUNGEN",
     "name": "Name",
     "create-exercise": "ÜBUNG ANLEGEN",
     "delete": "LÖSCHEN",

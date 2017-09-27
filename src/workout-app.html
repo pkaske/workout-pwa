@@ -129,11 +129,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
         <app-toolbar>[[localize('appName')]]</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="home" href="[[rootPath]]home"><iron-icon icon="wi:home"></iron-icon> HOME</a>
-          <a name="plans" href="[[rootPath]]plans"><iron-icon icon="wi:clipboard-text"></iron-icon> WORKOUT PLANS</a>
-          <a name="stats" href="[[rootPath]]stats"><iron-icon icon="wi:chart-line"></iron-icon> STATS</a>
-          <a name="exercises" href="[[rootPath]]exercises"><iron-icon icon="wi:dumbbell"></iron-icon> EXERCISES</a>
-          <a name="settings" href="[[rootPath]]settings"><iron-icon icon="wi:tune"></iron-icon> SETTINGS</a>
+          <a name="home" href="[[rootPath]]home"><iron-icon icon="wi:home"></iron-icon> [[localize('nav-home')]]</a>
+          <a name="plans" href="[[rootPath]]plans"><iron-icon icon="wi:clipboard-text"></iron-icon> [[localize('title-plans')]]</a>
+          <a name="stats" href="[[rootPath]]stats"><iron-icon icon="wi:chart-line"></iron-icon> [[localize('title-stats')]]</a>
+          <a name="exercises" href="[[rootPath]]exercises"><iron-icon icon="wi:dumbbell"></iron-icon> [[localize('title-exercises')]]</a>
+          <a name="settings" href="[[rootPath]]settings"><iron-icon icon="wi:tune"></iron-icon> [[localize('title-settings')]]</a>
         </iron-selector>
       </app-drawer>
 
@@ -241,7 +241,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // If no page was found in the route data, page will be an empty string.
         // Deault to 'view1' in that case.
         this.page = page || 'home';
-        this.title = 'title-' + page;
+        this.title = 'title-' + this.page;
 
         // Close a non-persistent drawer when the page & route are changed.
         if (!this.$.drawer.persistent) {

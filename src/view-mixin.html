@@ -6,11 +6,6 @@ ViewMixin = Polymer.dedupingMixin(function(superClass) {
   return class extends Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], superClass) {
     static get properties() {
       return {
-        title: {
-          type: String,
-          value: null
-        },
-
         active: {
           type: Boolean,
           value: false
@@ -48,8 +43,6 @@ ViewMixin = Polymer.dedupingMixin(function(superClass) {
 
     _signalActive(state) {
       if (state && this.resources) {
-        this.dispatchEvent(new CustomEvent('view-active', { detail: { title: this.title }, bubbles: true, composed: true }));
-
         if (this.headerAction) {
           this.dispatchEvent(new CustomEvent('set-header-action', {
             detail: this.headerAction,
