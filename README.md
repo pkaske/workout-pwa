@@ -6,12 +6,13 @@ A on the point workout app that is build as a PWA and aims to bring only the fea
 
 ### Incomplete TO-DO List:
 
-* [x] Manage exercise catalog.
-* [ ] Manage workout plans.
+* [x] Manage exercise catalog (will be changed and extended in the future).
+* [x] Manage workout plans.
+* [ ] Workout "Player"
 * [ ] Create notes to each workout / exercise while working out.
 * [ ] Timer that assists with rest times between sets.
 * [ ] Track progress for each exercise.
-* [ ] Work completely offline.
+* [x] Offline first thanks to Service Worker.
 
 ### Data Models
 
