@@ -1,14 +1,17 @@
+/* eslint no-console: off */
+/* global PouchDB */
+
 class PlanHandler {
   constructor() {
     this._planDb = new PouchDB('plans');
 
     this._planDb.createIndex({
       index: { fields: ['name'] }
-    }).then(() => {
-      this.all().then(docs => {
-        this._fire('plans-changed', docs);
-      })
-    });
+    })
+      .then(() => this.all())
+      .then(result => {
+        this._fire('plans-changed', result);
+      });
 
     this._changeFeed();
   }
@@ -33,8 +36,8 @@ class PlanHandler {
   deleteById(id) {
     return this._planDb.get(id)
       .then(doc => this._planDb.remove(doc))
-      .then(() => this.all()).then(docs => {
-        this._fire('plans-changed', docs);
+      .then(() => this.all()).then(result => {
+        this._fire('plans-changed', result);
       });
   }
 
@@ -43,8 +46,8 @@ class PlanHandler {
       since: 'now',
       live: true
     }).on('change', () => {
-      this.all().then(docs => {
-        this._fire('plans-changed', docs);
+      this.all().then(result => {
+        this._fire('plans-changed', result);
       });
     });
   }

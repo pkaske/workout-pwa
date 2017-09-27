@@ -259,15 +259,19 @@ Manage sessions for a workout plan.
 
     get value() {
       const exes = this._selExes.map(ex => {
-        ex.sets = this.shadowRoot
-          .querySelector('.ex-item[data-id="' + ex.id + '"]')
-          .querySelector('w-number-picker').value;
+        const itemEl = this.shadowRoot.querySelector('.ex-item[data-id="' + ex.id + '"]');
+        // Exercise seems to no longer exist.
+        if (!itemEl) {
+          return null;
+        }
+        ex.sets = itemEl.querySelector('w-number-picker').value;
         return ex;
       });
+
       return {
         name: this.$.name.value,
         days: this.$.days.value,
-        exercises: exes
+        exercises: exes.filter(ex => ex !== null)
       };
     }
 
