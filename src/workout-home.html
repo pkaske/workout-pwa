@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="w-play-workout.html">
 <link rel="import" href="view-mixin.html">
 <link rel="import" href="helpers-mixin.html">
@@ -56,6 +57,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       .todays-session .content .ex-item {
         padding: 10px 0;
       }
+
+      .no-upcoming-plans {
+        @apply --layout-fit;
+        @apply --layout-vertical;
+        @apply --layout-center-center;
+        color: var(--pc-300);
+      }
+
+      .no-upcoming-plans iron-icon {
+        --iron-icon-width: 64px;
+        --iron-icon-height: 64px;
+      }
+
+      .no-upcoming-plans > div:first-of-type {
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+        border-bottom: solid 1px var(--pc-300);
+      }
+
+      .no-upcoming-plans button {
+        font-size: 14px;
+      }
     </style>
 
     <!-- List todays sessions -->
@@ -82,6 +105,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
       </section>
     </template>
+
+    <div class="no-upcoming-plans" hidden$="[[_hasUpcomingPlans(_todaysSessions)]]">
+      <iron-icon icon="wi:sofa"></iron-icon>
+      <div>[[localize('no-upcoming-plans')]]</div>
+      <a href="[[rootPath]]plans" class="button rounded">[[localize('create-a-plan')]]</a>
+    </div>
 
     <w-play-workout id="player"></w-play-workout>
   </template>
@@ -145,6 +174,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _playSession(e) {
         this.$.player.start(this.$.sessionList.modelForElement(e.target).session);
+      }
+
+      _hasUpcomingPlans() {
+        return this._todaysSessions.length > 0;
       }
     }
 

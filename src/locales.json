@@ -36,7 +36,9 @@
     "workout-active": "Currently followed workout plan",
     "today": "Today",
     "new-version-available": "New version is available",
-    "reload": "Reload"
+    "reload": "Reload",
+    "no-upcoming-plans": "NO WORKOUTS TODAY",
+    "create-a-plan": "CREATE A WORKOUT"
   },
   "de": {
     "app-name": "Workout PWA",
@@ -74,6 +76,8 @@
     "workout-active": "Nach diesem Plan trainieren",
     "today": "Heute",
     "new-version-available": "New version is available",
-    "reload": "Neu laden"
+    "reload": "Neu laden",
+    "no-upcoming-plans": "KEINE WORKOUTS HEUTE",
+    "create-a-plan": "WORKOUT PLAN ERSTELLEN"
   }
 }
