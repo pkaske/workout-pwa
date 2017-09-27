@@ -22,6 +22,12 @@ Copyright (c) 2017 Peter Kaske
     <w-slide-up-panel full id="panel">
       <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
       <h1 slot="header">[[_session.name]]</h1>
+
+      <template is="dom-repeat" items="[[_exerciseData(_session.exercises.*, exercisesMap)]]" as="ex">
+        <section class="margin-top-25">
+          <header>[[ex.name]]</header>
+        </section>
+      </template>
     </w-slide-up-panel>
   </template>
 
@@ -31,9 +37,12 @@ Copyright (c) 2017 Peter Kaske
 
       static get properties() {
         return {
+          exercisesMap: {
+            type: Map
+          },
+
           _session: {
-            type: Object,
-            value: null
+            type: Object
           }
         };
       }
@@ -41,6 +50,12 @@ Copyright (c) 2017 Peter Kaske
       start(session) {
         this._session = session;
         this.$.panel.show();
+      }
+
+      _exerciseData() {
+        if (this._session) {
+          return this._resolveExercises(this._session.exercises);
+        }
       }
     }
 

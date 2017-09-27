@@ -96,7 +96,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </header>
         <div class="content">
           <div class="list-exes">
-            <template is="dom-repeat" items="[[_resolveExersices(session.exercises)]]" as="ex">
+            <template is="dom-repeat" items="[[_resolveExercises(session.exercises, exercisesMap)]]" as="ex">
               <div class="ex-item horizontal justified">
                 <div>[[ex.name]]</div><div>[[ex.sets]] [[localize('ex-sets')]]</div>
               </div>
@@ -112,7 +112,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <a href="[[rootPath]]plans" class="button rounded">[[localize('create-a-plan')]]</a>
     </div>
 
-    <w-play-workout id="player"></w-play-workout>
+    <w-play-workout exercises-map="[[exercisesMap]]" id="player"></w-play-workout>
   </template>
 
   <script>

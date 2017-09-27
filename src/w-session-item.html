@@ -151,7 +151,7 @@ Manage sessions for a workout plan.
           <paper-icon-button class="smaller" icon="wi:plus" on-tap="_requestExercises"></paper-icon-button>
         </label>
         <w-sortable id="exList" handle=".ex-handle" selector="w-swipe-action" on-items-rearranged="_exercisesRearranged">
-          <template is="dom-repeat" items="[[_resolveExersices('_selExes', _selExes.*)]]" as="ex">
+          <template is="dom-repeat" items="[[_resolveExercises('_selExes', _selExes.*)]]" as="ex">
             <w-swipe-action threshold="150" class="ex-item" data-id$="[[ex.id]]" on-action-triggered="_exActionTriggered" on-swipe-start="_checkIfSwipeEnabled">
               <div slot="left-action">
                 <div>[[localize('delete')]]</div>

@@ -43,19 +43,26 @@ HelpersMixin = Polymer.dedupingMixin(superClass =>  {
       }
     }
 
-    _resolveExersices(path) {
+    _resolveExercises(path) {
       const list = [];
       (typeof path === 'string' ? this.get(path) : path).forEach(ex => {
-        const exercise = this.exercisesMap.get(ex.id);
+        const exercise = this._resolveExercise(ex);
         if (exercise) {
-          list.push({
-            id: ex.id,
-            name: exercise.name,
-            sets: ex.sets || 1
-          });
+          list.push(exercise);
         }
       });
       return list;
+    }
+
+    _resolveExercise(ex) {
+      const exercise = this.exercisesMap.get(ex.id);
+      if (exercise) {
+        return {
+          id: ex.id,
+          name: exercise.name,
+          sets: ex.sets || 1
+        };
+      }
     }
   }
 });
