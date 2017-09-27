@@ -6,6 +6,8 @@ Copyright (c) 2017 Peter Kaske
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="w-slide-up-panel.html">
 <link rel="import" href="view-mixin.html">
 <link rel="import" href="helpers-mixin.html">
@@ -17,6 +19,38 @@ Copyright (c) 2017 Peter Kaske
       :host {
         display: block;
       }
+
+      header {
+        background: var(--pc-600);
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        @apply --layout-center;
+        background: var(--pc-600);
+        padding: 10px;
+      }
+
+      header > div:first-child {
+        @apply --layout-flex;
+      }
+
+      header iron-icon {
+        color: var(--gold);
+        margin-left: 10px;
+      }
+
+      .pr-gold {
+        color: var(--gold);
+      }
+
+      .content {
+        padding: 10px;
+        background: var(--pc-800);
+      }
+
+      .set-no {
+        color: var(--pc-100);
+        font-weight: bold;
+      }
     </style>
 
     <w-slide-up-panel full id="panel">
@@ -25,7 +59,18 @@ Copyright (c) 2017 Peter Kaske
 
       <template is="dom-repeat" items="[[_exerciseData(_session.exercises.*, exercisesMap)]]" as="ex">
         <section class="margin-top-25">
-          <header>[[ex.name]]</header>
+          <header>
+            <div>[[ex.name]]</div>
+            <div class="pr-gold">40 kg</div>
+            <iron-icon icon="wi:trophy"></iron-icon>
+          </header>
+          <div class="content">
+            <template is="dom-repeat" items="[[_getSets(ex)]]" as="set">
+              <div class="horizontal justified">
+                <div class="set-no">[[set]]</div>
+              </div>
+            </template>
+          </div>
         </section>
       </template>
     </w-slide-up-panel>
@@ -56,6 +101,10 @@ Copyright (c) 2017 Peter Kaske
         if (this._session) {
           return this._resolveExercises(this._session.exercises);
         }
+      }
+
+      _getSets(ex) {
+        return [...Array(ex.sets).keys()].slice(1);
       }
     }
 
