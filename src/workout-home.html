@@ -109,10 +109,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div class="no-upcoming-plans" hidden$="[[_hasUpcomingPlans(_todaysSessions)]]">
       <iron-icon icon="wi:sofa"></iron-icon>
       <div>[[localize('no-upcoming-plans')]]</div>
-      <a href="[[rootPath]]plans" class="button rounded">[[localize('create-a-plan')]]</a>
+      <a href="[[rootPath]]plans/new" class="button rounded">[[localize('create-a-plan')]]</a>
     </div>
 
-    <w-play-workout exercises-map="[[exercisesMap]]" id="player"></w-play-workout>
+    <w-play-workout exercises-map="[[exercisesMap]]" resources="[[resources]]" id="player"></w-play-workout>
   </template>
 
   <script>

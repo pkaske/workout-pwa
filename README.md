@@ -19,16 +19,28 @@ A on the point workout app that is build as a PWA and aims to bring only the fea
 All data is stored on the device with pouchdb.  
 Currently no sync to any server happens.
 
-**exercises**
+**Exercises**
+
+The weight is always saved in kg.
 
 ```json
 {
   "_id": "ID",
-  "name": "Exercise name"
+  "name": "Exercise name",
+  "records": [
+    {
+      "date": "2017-10-02T16:32:35.907Z",
+      "sets": [
+        { "weight": 22.5, "reps": 4 },
+        { "weight": 25, "reps": 5 }
+      ],
+      "notes": "Some notes to the performance on that exercise on this particular training day"
+    }
+  ]
 }
 ```
 
-**workout plan**
+**Workout Plan**
 
 ```json
 {
@@ -42,3 +54,18 @@ Currently no sync to any server happens.
     "exercises": [ { "id": "UUID1", "sets": 3 }, { "id": "UUID2", "sets": 3 } ]
   }]
 }
+```
+
+**Structure of the current workout session in the "workout player"**
+
+```json
+{
+  "name": "Leg day",
+  "days": [ 1, 4 ],
+  "exercises": [
+    { "id": "UUID1", "name": "Exercise 1" "sets": 3, "records": ["..."] },
+    { "id": "UUID2", "name": "Exercise 2" "sets": 3, "records": ["..."] }
+  ],
+  "plan": "[object of the workout plan this session belongs to]"
+}
+```

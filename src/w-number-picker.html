@@ -7,6 +7,7 @@ License: MIT
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 
 <!--
 # w-number-picker
@@ -24,14 +25,22 @@ Helps to quickly select a number with just one touch.
     <style>
       :host {
         display: inline-block;
+        user-select: none;
       }
 
       #nob {
+        position: relative;
         width: 32px;
         height: 32px;
         transform: translate3d(0, 0, 0);
         @apply --layout-vertical;
         @apply --layout-center-center;
+
+        @apply --w-number-picker-nob;
+      }
+
+      :host([tracking]) #nob {
+        z-index: 3;
       }
 
       .nob-bubble {
@@ -47,6 +56,12 @@ Helps to quickly select a number with just one touch.
         transition: background-color 280ms ease-in-out;
         @apply --layout-horizontal;
         @apply --layout-center-center;
+
+        @apply --w-number-picker-nob-bubble;
+      }
+
+      :host([tracking]) {
+        z-index: 99;
       }
 
       :host([tracking]) .nob-bubble {
@@ -54,8 +69,37 @@ Helps to quickly select a number with just one touch.
         transform: scale(1.3);
       }
 
+      :host([tracking][negative]) .nob-bubble {
+        background-color: var(--red-900);
+      }
+
       :host([tracking]) .nob-bubble > div {
         visibility: hidden;
+      }
+
+      :host([tracking]) .val-area {
+        display: block;
+        opacity: 1;
+      }
+
+      .val-area {
+        opacity: 0;
+        -webkit-transition: opacity 100ms ease-in-out;
+        -moz-transition: opacity 100ms ease-in-out;
+        transition: opacity 100ms ease-in-out;
+        pointer-events: none;
+        position: fixed;
+        z-index: 1;
+      }
+
+      .val-area.positive {
+        background: rgba(42, 203, 252, 0.3);
+        background: radial-gradient(circle at bottom, rgba(42, 203, 252, 0.5) 0%, rgba(42, 203, 252, 0) 60%);
+      }
+
+      .val-area.negative {
+        background: rgba(252, 42, 60, 0.3);
+        background: radial-gradient(circle at top, rgba(252, 42, 60, 0.5) 0%, rgba(252, 42, 60, 0) 60%);
       }
 
       #info {
@@ -74,11 +118,18 @@ Helps to quickly select a number with just one touch.
       .info-bubble {
         width: 54px;
         height: 54px;
-        background: var(--hl-400);
+        background-color: var(--hl-400);
         border-radius: 50% 50% 10% 50%;
         transform: scale(0) rotateX(45deg) rotateZ(-45deg);
+        -webkit-transition: background-color ease-in-out 280ms;
+        -moz-transition: background-color ease-in-out 280ms;
+        transition: background-color ease-in-out 280ms;
         @apply --layout-horizontal;
         @apply --layout-center-center;
+      }
+
+      :host([negative]) .info-bubble {
+        background-color: var(--red-900);
       }
 
       :host([bubble-right]) .info-bubble {
@@ -100,6 +151,70 @@ Helps to quickly select a number with just one touch.
 
       :host([tracking][bubble-right]) #info {
         transform: translateX(140%);
+      }
+
+      #inputPopup {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        opacity: 0;
+        pointer-events: none;
+        -webkit-transition: opacity 180ms ease-in-out;
+        -moz-transition: opacity 180ms ease-in-out;
+        transition: opacity 180ms ease-in-out;
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+      }
+
+      #inputPopup[visible] {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      #inputPopup button {
+        border: none;
+      }
+
+      #inputPopup .content > button {
+        display: block;
+        width: 200px;
+        height: 50px;
+        font-size: 32px;
+        color: var(--text-100);
+      }
+
+      #inputPopup .content > div {
+        @apply --layout-horizontal;
+      }
+
+      #inputPopup .content input {
+        width: 150px;
+        height: 60px;
+        box-sizing: border-box;
+        text-align: center;
+        font-size: 22px;
+        border-style: none;
+      }
+
+      #inputPopup #inputOk {
+        width: 50px;
+        height: 60px;
+        background: var(--hl-400);
+        color: var(--text-100);
+      }
+
+      button.inc {
+        background: var(--green-700);
+        border-radius: 4px 4px 0 0;
+      }
+
+      button.dec {
+        background: var(--red-900);
+        border-radius: 0 0 4px 4px;
       }
 
       #rectTop,
@@ -219,7 +334,7 @@ Helps to quickly select a number with just one touch.
       }
     </style>
 
-    <div id="nob" on-track="_handleTrack" on-tap="_playHelpAni">
+    <div id="nob" on-track="_handleTrack" on-tap="_nobTap">
       <div id="rectTop"></div>
       <div class="nob-bubble"><div>[[value]]</div></div>
       <div id="rectBottom"></div>
@@ -227,6 +342,20 @@ Helps to quickly select a number with just one touch.
         <div class="info-bubble">
           <div>[[value]]</div>
         </div>
+      </div>
+    </div>
+    <div id="areaPositive" class="val-area positive"></div>
+    <div id="areaNegative" class="val-area negative"></div>
+    <div id="inputPopup">
+      <div class="content">
+        <button class="inc" on-tap="_increase">+</button>
+        <div>
+          <input type="number" id="valueInput">
+          <button id="inputOk" on-tap="_applyInputValue">
+            <iron-icon icon="wi:check"></iron-icon>
+          </button>
+        </div>
+        <button class="dec" on-tap="_decrease">-</button>
       </div>
     </div>
   </template>
@@ -253,6 +382,11 @@ Helps to quickly select a number with just one touch.
           value: Infinity
         },
 
+        step: {
+          type: Number,
+          value: 1
+        },
+
         sensitivity: {
           type: Number,
           value: 15
@@ -276,16 +410,27 @@ Helps to quickly select a number with just one touch.
     _handleTrack(e) {
       switch (e.detail.state) {
         case 'start':
+          const areaRadius = 300;
+          const rect = this.getBoundingClientRect();
+          this._stylePositiveAreaIndicator(rect, areaRadius);
+          this._styleNegativeAreaIndicator(rect, areaRadius);
           this._startingOffset = this.value;
           this._setTracking(true);
           this.dispatchEvent(new CustomEvent('tracking-state', { detail: true, bubbles: true, composed: true }));
-          this._translate3d('0px', e.detail.dy + 'px', '0px', this.$.nob);
+          this._translate3d(e.detail.dx + 'px', e.detail.dy + 'px', '0px', this.$.nob);
           break;
         case 'track':
           if (this.tracking) {
-            var val = this._startingOffset + (Math.ceil(e.detail.dy / this.sensitivity) * -1);
-            this.value = Math.max(this.min, Math.min(this.max, val));
-            this._translate3d('0px', e.detail.dy + 'px', '0px', this.$.nob);
+            var dist = Math.max(Math.abs(e.detail.dy), Math.abs(e.detail.dx));
+            var dir = e.detail.dy > 0 ? -1 : 1;
+            if (dir === -1) {
+              this.setAttribute('negative', '');
+            } else {
+              this.removeAttribute('negative');
+            }
+            var val = this._startingOffset + (Math.ceil(dist / this.sensitivity) * dir * this.step);
+            this.value = this._sanitizeValue(val);
+            this._translate3d(e.detail.dx + 'px', e.detail.dy + 'px', '0px', this.$.nob);
           }
           break;
         case 'end':
@@ -298,6 +443,22 @@ Helps to quickly select a number with just one touch.
           }
           break;
       }
+    }
+
+    _stylePositiveAreaIndicator(rect, areaRadius) {
+      this.$.areaPositive.style.height = `${areaRadius}px`;
+      this.$.areaPositive.style.width = `${areaRadius * 2}px`;
+      this.$.areaPositive.style.left = `${rect.left - areaRadius + rect.width / 2}px`;
+      this.$.areaPositive.style.top = `${rect.bottom - areaRadius - rect.height / 2}px`;
+      this.$.areaPositive.style.borderRadius = `${areaRadius}px ${areaRadius}px 0 0`;
+    }
+
+    _styleNegativeAreaIndicator(rect, areaRadius) {
+      this.$.areaNegative.style.height = `${areaRadius}px`;
+      this.$.areaNegative.style.width = `${areaRadius * 2}px`;
+      this.$.areaNegative.style.left = `${rect.left - areaRadius + rect.width / 2}px`;
+      this.$.areaNegative.style.top = `${rect.top + rect.height / 2}px`;
+      this.$.areaNegative.style.borderRadius = `0 0 ${areaRadius}px ${areaRadius}px`;
     }
 
     _snapBackEnd(e) {
@@ -313,6 +474,49 @@ Helps to quickly select a number with just one touch.
       const transformText = 'translate3d(' + x + ',' + y + ',' + z + ')';
       node.style.webkitTransform = transformText;
       node.style.transform = transformText;
+    }
+
+    _sanitizeValue(val) {
+      if (isNaN(parseInt(val, 10))) {
+        val = this.min || 0;
+      }
+      return Math.max(this.min, Math.min(this.max, val));
+    }
+
+    _nobTap() {
+      if (this._wasTappedOnce) {
+        this._showInputPopup();
+        clearTimeout(this._tapTimer);
+        this._wasTappedOnce = false;
+        return
+      }
+      this._wasTappedOnce = true;
+      this._tapTimer = setTimeout(() => {
+        this._wasTappedOnce = false;
+        this._playHelpAni();
+      }, 300);
+    }
+
+    _showInputPopup() {
+      this.$.valueInput.value = this.value;
+      this.$.inputPopup.setAttribute('visible', '');
+    }
+    
+    _hideInputPopup() {
+      this.$.inputPopup.removeAttribute('visible');
+    }
+
+    _applyInputValue() {
+      this.value = this._sanitizeValue(this.$.valueInput.value);
+      this._hideInputPopup();
+    }
+
+    _increase() {
+      this.$.valueInput.value = this._sanitizeValue(parseInt(this.$.valueInput.value, 10) + this.step);
+    }
+
+    _decrease() {
+      this.$.valueInput.value = this._sanitizeValue(parseInt(this.$.valueInput.value, 10) - this.step);
     }
 
     _playHelpAni() {

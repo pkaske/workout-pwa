@@ -136,6 +136,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         };
       }
 
+      static get observers() {
+        return [
+          '_subrouteChanged(subroute, active)'
+        ];
+      }
+
       connectedCallback() {
         super.connectedCallback();
 
@@ -153,6 +159,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         this._submitOnEnter();
+      }
+
+      _subrouteChanged(subroute) {
+        if (!this.active || subroute.prefix !== '/plans') return;
+        if (this.subroute.path === '/new') {
+          // Show pane for new workout.
+          Polymer.RenderStatus.afterNextRender(this, () => {
+            this._onHeaderAction();
+          });
+        }
       }
 
       _onHeaderAction() {

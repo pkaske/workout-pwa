@@ -6,8 +6,11 @@ Copyright (c) 2017 Peter Kaske
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
+<link rel="import" href="w-number-picker.html">
 <link rel="import" href="w-slide-up-panel.html">
 <link rel="import" href="view-mixin.html">
 <link rel="import" href="helpers-mixin.html">
@@ -47,9 +50,44 @@ Copyright (c) 2017 Peter Kaske
         background: var(--pc-800);
       }
 
-      .set-no {
-        color: var(--pc-100);
-        font-weight: bold;
+      .ex-header {
+        padding: 0;
+        color: var(--pc-300);
+        border: none;
+      }
+
+      .set-item {
+        padding-bottom: 10px;
+        border-bottom: solid 1px var(--pc-600);
+        margin-bottom: 10px;
+      }
+
+      .set-item .today {
+        margin-right: 20px;
+        max-width: 150px;
+      }
+
+      .set-number {
+        color: var(--pc-600);
+        background: var(--pc-300);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+      }
+
+      .set-item:last-of-type {
+        border-bottom: none;
+      }
+
+      .weight-picker {
+        --w-number-picker-nob: {
+          width: auto;
+        };
+        --w-number-picker-nob-bubble: {
+          border-radius: 5px;
+        };
       }
     </style>
 
@@ -57,33 +95,60 @@ Copyright (c) 2017 Peter Kaske
       <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
       <h1 slot="header">[[_session.name]]</h1>
 
-      <template is="dom-repeat" items="[[_exerciseData(_session.exercises.*, exercisesMap)]]" as="ex">
-        <section class="margin-top-25">
-          <header>
-            <div>[[ex.name]]</div>
-            <div class="pr-gold">40 kg</div>
-            <iron-icon icon="wi:trophy"></iron-icon>
-          </header>
-          <div class="content">
-            <template is="dom-repeat" items="[[_getSets(ex)]]" as="set">
-              <div class="horizontal justified">
-                <div class="set-no">[[set]]</div>
+      <template is="dom-repeat" items="[[_exercises]]" as="ex">
+        <iron-form>
+          <form>
+            <section class="margin-top-25">
+              <header>
+                <div>[[ex.name]]</div>
+                <div class="pr-gold">40 kg</div>
+                <iron-icon icon="wi:trophy"></iron-icon>
+              </header>
+              <div class="content">
+                <label class="ex-header horizontal justified">
+                  <div>[[localize('last-time')]]</div>
+                </label>
+                <template is="dom-repeat" items="[[_getSets(ex)]]" as="set">
+                  <label class="set-item horizontal justified">
+                    <div class="set-number">[[set]]</div>
+
+                    <div class="today horizontal justified flex">
+                      <w-number-picker
+                        min="1"
+                        max="100"
+                        name="reps"></w-number-picker>
+                      <span>X</span>
+                      <w-number-picker
+                        class="weight-picker"
+                        min="0"
+                        max="9999"
+                        step="1.25"
+                        sensitivity="80"
+                        name="weight"></w-number-picker>
+                    </div>
+
+                  </div>
+                </template>
               </div>
-            </template>
-          </div>
-        </section>
+            </section>
+          </form>
+        </iron-form>
       </template>
     </w-slide-up-panel>
   </template>
 
   <script>
-    class WPlayWorkout extends Polymer.GestureEventListeners(HelpersMixin(ViewMixin(Polymer.Element))) {
+    class WPlayWorkout extends Polymer.GestureEventListeners(HelpersMixin(ViewMixin(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element)))) {
       static get is() { return 'w-play-workout'; }
 
       static get properties() {
         return {
           exercisesMap: {
             type: Map
+          },
+
+          resources: {
+            type: Object
           },
 
           _session: {
@@ -95,12 +160,21 @@ Copyright (c) 2017 Peter Kaske
       start(session) {
         this._session = session;
         this.$.panel.show();
+        this._getExercises();
       }
 
-      _exerciseData() {
-        if (this._session) {
-          return this._resolveExercises(this._session.exercises);
-        }
+      async _getExercises() {
+        const result = await window.App.Exercises.findWithRecords(this._session.exercises.map(ex => ex.id));
+        const exWithRecords = result.docs;
+        const populatedList = [];
+        this._session.exercises.forEach(ex => {
+          const srcEx = exWithRecords.find(exWR => ex.id === exWR._id);
+          if (srcEx) {
+            populatedList.push(Object.assign(ex, srcEx));
+          }
+        });
+
+        this._exercises = populatedList;
       }
 
       _getSets(ex) {

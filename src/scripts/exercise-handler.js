@@ -6,7 +6,7 @@ class ExerciseHandler {
     this._exercisedDb = new PouchDB('exercises');
 
     this._exercisedDb.createIndex({
-      index: { fields: ['name'] }
+      index: { fields: [ 'name' ] }
     })
       .then(() => this.all())
       .then(result => {
@@ -54,7 +54,16 @@ class ExerciseHandler {
       selector: {
         name: { $gte: null }
       },
+      fields: [ '_id', 'name' ],
       sort: [ 'name' ]
+    });
+  }
+
+  findWithRecords(ids) {
+    return this._exercisedDb.find({
+      selector: {
+        _id: { $in: ids }
+      }
     });
   }
 
