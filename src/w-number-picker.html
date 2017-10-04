@@ -477,7 +477,7 @@ Helps to quickly select a number with just one touch.
     }
 
     _sanitizeValue(val) {
-      if (isNaN(parseInt(val, 10))) {
+      if (isNaN(parseFloat(val, 10))) {
         val = this.min || 0;
       }
       return Math.max(this.min, Math.min(this.max, val));
@@ -512,11 +512,11 @@ Helps to quickly select a number with just one touch.
     }
 
     _increase() {
-      this.$.valueInput.value = this._sanitizeValue(parseInt(this.$.valueInput.value, 10) + this.step);
+      this.$.valueInput.value = this._sanitizeValue(parseFloat(this.$.valueInput.value, 10) + this.step);
     }
 
     _decrease() {
-      this.$.valueInput.value = this._sanitizeValue(parseInt(this.$.valueInput.value, 10) - this.step);
+      this.$.valueInput.value = this._sanitizeValue(parseFloat(this.$.valueInput.value, 10) - this.step);
     }
 
     _playHelpAni() {
