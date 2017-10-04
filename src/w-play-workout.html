@@ -46,25 +46,22 @@ Copyright (c) 2017 Peter Kaske
       }
 
       .content {
+        display: grid;
+        grid-template-columns: 40px 1fr 1fr;
+        grid-row-gap: 10px;
         padding: 10px;
         background: var(--pc-800);
       }
 
-      .ex-header {
-        padding: 0;
-        color: var(--pc-300);
-        border: none;
-      }
-
-      .set-item {
+      .content > div {
         padding-bottom: 10px;
         border-bottom: solid 1px var(--pc-600);
-        margin-bottom: 10px;
       }
 
-      .set-item .today {
-        margin-right: 20px;
-        max-width: 150px;
+      .content label {
+        color: var(--pc-300);
+        border-bottom: none;
+        padding: 5px 0;
       }
 
       .set-number {
@@ -77,10 +74,6 @@ Copyright (c) 2017 Peter Kaske
         text-align: center;
       }
 
-      .set-item:last-of-type {
-        border-bottom: none;
-      }
-
       .weight-picker {
         --w-number-picker-nob: {
           width: auto;
@@ -88,6 +81,14 @@ Copyright (c) 2017 Peter Kaske
         --w-number-picker-nob-bubble: {
           border-radius: 5px;
         };
+      }
+
+      .reps-picker {
+        margin-right: 10px;
+      }
+
+      .weight-picker {
+        margin-left: 10px;
       }
     </style>
 
@@ -105,28 +106,31 @@ Copyright (c) 2017 Peter Kaske
                 <iron-icon icon="wi:trophy"></iron-icon>
               </header>
               <div class="content">
-                <label class="ex-header horizontal justified">
-                  <div>[[localize('last-time')]]</div>
-                </label>
+                <label></label>
+                <label class="prev-record"><span>[[localize('last-time')]]</span></label>
+                <label>[[localize('this-time')]]</label>
                 <template is="dom-repeat" items="[[_getSets(ex)]]" as="set">
-                  <label class="set-item horizontal justified">
+                  <div>
                     <div class="set-number">[[set]]</div>
+                  </div>
+                  <div class="prev-record">
 
-                    <div class="today horizontal justified flex">
-                      <w-number-picker
-                        min="1"
-                        max="100"
-                        name="reps"></w-number-picker>
-                      <span>X</span>
-                      <w-number-picker
-                        class="weight-picker"
-                        min="0"
-                        max="9999"
-                        step="1.25"
-                        sensitivity="80"
-                        name="weight"></w-number-picker>
-                    </div>
-
+                  </div>
+                  <div class="current-record">
+                    <w-number-picker
+                      class="reps-picker"
+                      min="1"
+                      max="100"
+                      name="reps"></w-number-picker>
+                    <span>x</span>
+                    <w-number-picker
+                      class="weight-picker"
+                      min="0"
+                      max="9999"
+                      step="1.25"
+                      sensitivity="80"
+                      name="weight"></w-number-picker>
+                    <span>[[settings.weightUnit]]</span>
                   </div>
                 </template>
               </div>
@@ -179,6 +183,14 @@ Copyright (c) 2017 Peter Kaske
 
       _getSets(ex) {
         return [...Array(ex.sets).keys()].slice(1);
+      }
+
+      _hasRecords(ex) {
+        return (ex.records || []).length > 0;
+      }
+
+      _getRecordsForPlan(ex) {
+        return (ex.records || []).filter(rec => rec.plan === this._session.plan._id);
       }
     }
 

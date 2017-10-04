@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
 <link rel="import" href="view-mixin.html">
 <link rel="import" href="shared-styles.html">
 
@@ -17,15 +18,56 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <style include="shared-styles">
       :host {
         display: block;
+      }
 
-        padding: 10px;
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        justify-content: space-between;
+      }
+
+      label {
+        padding: 0 10px;
+        height: 64px;
+        line-height: 64px;
+      }
+
+      .grid > div {
+        background: var(--pc-800);
+        line-height: 64px;
+        padding-right: 10px;
+      }
+
+      select {
+        width: 100%;
       }
     </style>
 
-    <div class="card">
-      <h1>SETTINGS</h1>
-      <p>Ea duis bonorum nec, falli paulo aliquid ei eum.</p>
-      <p>Id nam odio natum malorum, tibique copiosae expetenda mel ea.Detracto suavitate repudiandae no eum. Id adhuc minim soluta nam.Id nam odio natum malorum, tibique copiosae expetenda mel ea.</p>
+    <iron-form id="form">
+      <form>
+        <div class="grid margin-top-25">
+          <label><span>[[localize('language')]]</span></label>
+          <div>
+            <select name="language" value="[[_settings.language]]">
+              <option value="en">[[localize('english')]]</option>
+              <option value="de">[[localize('german')]]</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid">
+          <label><span>[[localize('weight-unit')]]</span></label>
+          <div>
+            <select name="weightUnit" value="[[_settings.weightUnit]]">
+              <option value="kg">kg</option>
+              <option value="lbs">lbs</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </iron-form>
+    <div class="horizontal center justified margin-top-25">
+      <button class="flex" danger dismiss-panel>[[localize('cancel')]]</button>
+      <button class="flex" confirm on-tap="_submitForm">[[localize('save')]]</button>
     </div>
   </template>
 
@@ -33,8 +75,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     class WorkoutSettings extends ViewMixin(Polymer.Element) {
       static get is() { return 'workout-settings'; }
 
-      static get properties() {
-        return { };
+      static get observers() {
+        return [
+          '_activeChanged(active)'
+        ];
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+
+        this.$.form.addEventListener('iron-form-presubmit', e => {
+          e.preventDefault();
+          var settings = this.$.form.serializeForm();
+          Promise.all(Object.entries(settings).map(setting => window.App.Settings.set(...setting)))
+            .then(() => window.App.Settings.load())
+            .then(() => {
+              console.info('Settings saved');
+            });
+        });
+      }
+
+      _activeChanged(state) {
+        if (state) {
+          window.App.Settings.load(true)
+            .then(settings => {
+              this._settings = settings;
+            });
+        }
+      }
+
+      _submitForm() {
+        this.$.form.submit();
       }
     }
 

@@ -9,7 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="w-play-workout.html">
@@ -112,11 +111,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <a href="[[rootPath]]plans/new" class="button rounded">[[localize('create-a-plan')]]</a>
     </div>
 
-    <w-play-workout exercises-map="[[exercisesMap]]" resources="[[resources]]" id="player"></w-play-workout>
+    <w-play-workout exercises-map="[[exercisesMap]]" language="[[language]]" resources="[[resources]]" settings="[[settings]]" id="player"></w-play-workout>
   </template>
 
   <script>
-    class WorkoutHome extends Polymer.GestureEventListeners(HelpersMixin(ViewMixin(Polymer.Element))) {
+    class WorkoutHome extends HelpersMixin(ViewMixin(Polymer.Element)) {
       static get is() { return 'workout-home'; }
 
       static get properties() {

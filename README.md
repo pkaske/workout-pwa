@@ -30,6 +30,7 @@ The weight is always saved in kg.
   "records": [
     {
       "date": "2017-10-02T16:32:35.907Z",
+      "plan": "UUID",
       "sets": [
         { "weight": 22.5, "reps": 4 },
         { "weight": 25, "reps": 5 }

@@ -12,7 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/iron-form/iron-form.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="w-swipe-action.html">
 <link rel="import" href="w-slide-up-panel.html">
 <link rel="import" href="helpers-mixin.html">
@@ -83,7 +82,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-    class WorkoutExercises extends Polymer.GestureEventListeners(HelpersMixin(ViewMixin(Polymer.Element))) {
+    class WorkoutExercises extends HelpersMixin(ViewMixin(Polymer.Element)) {
       static get is() { return 'workout-exercises'; }
 
       static get properties() {

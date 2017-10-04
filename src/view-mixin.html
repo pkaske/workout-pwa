@@ -1,9 +1,10 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 
 <script>
 ViewMixin = Polymer.dedupingMixin(function(superClass) {
-  return class extends Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], superClass) {
+  return class extends Polymer.GestureEventListeners(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], superClass)) {
     static get properties() {
       return {
         active: {
@@ -25,6 +26,10 @@ ViewMixin = Polymer.dedupingMixin(function(superClass) {
         },
 
         headerAction: {
+          type: Object
+        },
+
+        settings: {
           type: Object
         }
       };

@@ -1,7 +1,7 @@
 {
   "en": {
     "app-name": "Workout PWA",
-    "nav-home": "HOME",
+    "nav-home": "START",
     "title-home": "READY TO WORKOUT?",
     "title-exercises": "EXERCISES",
     "title-plans": "WORKOUT PLANS",
@@ -39,10 +39,16 @@
     "reload": "Reload",
     "no-upcoming-plans": "NO WORKOUTS TODAY",
     "create-a-plan": "CREATE A WORKOUT",
-    "last-time": "Last time"
+    "last-time": "Last time",
+    "this-time": "Today",
+    "language": "Language",
+    "english": "English",
+    "german": "Deutsch",
+    "weight-unit": "Unit for weights"
   },
   "de": {
     "app-name": "Workout PWA",
+    "nav-home": "START",
     "title-home": "BEREIT FÜR DEIN WORKOUT?",
     "title-exercises": "ÜBUNGEN",
     "title-plans": "WORKOUTS",
@@ -80,6 +86,11 @@
     "reload": "Neu laden",
     "no-upcoming-plans": "KEINE WORKOUTS HEUTE",
     "create-a-plan": "WORKOUT PLAN ERSTELLEN",
-    "last-time": "Letztes Mal"
+    "last-time": "Letztes Mal",
+    "this-time": "Heute",
+    "language": "Sprache",
+    "english": "Englisch",
+    "german": "Deutsch",
+    "weight-unit": "Gewichtseinheit"
   }
 }

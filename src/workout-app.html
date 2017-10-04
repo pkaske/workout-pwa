@@ -29,6 +29,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <script src="scripts/exercise-handler.js"></script>
 <script src="scripts/plan-handler.js"></script>
+<script src="scripts/settings-handler.js"></script>
 
 <dom-module id="workout-app">
   <template>
@@ -161,7 +162,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             exercises="[[_exercises]]"
             exercises-map="[[_exercisesMap]]"
             active-plans="[[_activePlans]]"
-            name="home"></workout-home>
+            name="home"
+            settings="[[_settings]]"></workout-home>
           <workout-plans
             active="[[_eq(page, 'plans')]]"
             subroute="[[subroute]]"
@@ -264,7 +266,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _setupPouchdb() {
         window.App = {
           Exercises: new ExerciseHandler(),
-          Plans: new PlanHandler()
+          Plans: new PlanHandler(),
+          Settings: new SettingsHandler()
         };
 
         document.addEventListener('exercises-changed', e => {
@@ -280,6 +283,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         document.addEventListener('plans-changed', e => {
           this._plans = e.detail.docs;
           this._activePlans = this._plans.filter(plan => plan.active);
+        });
+
+        document.addEventListener('settings-loaded', e => {
+          this._settings = e.detail;
+          this.language = this._settings.language || window.navigator.language;
         });
       }
 

@@ -12,12 +12,13 @@ window.ExerciseHandler = function() {
     .then(result => {
       if (result.docs.length === 0) {
         this._setupDefaultExercises();
+        this._changeFeed();
       } else {
         this._fire('exercises-changed', result);
+        this._changeFeed();
       }
     });
 
-  this._changeFeed();
 };
 
 ExerciseHandler.prototype._setupDefaultExercises = function() {
