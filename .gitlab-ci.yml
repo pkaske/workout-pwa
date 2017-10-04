@@ -23,4 +23,3 @@ stage_deploy:
     - ssh-add <(echo "$PREVIEW_PRIVATE_KEY")
     - ssh -p22 $SSH_URL "rm -rf $DEST_PATH/*"
     - scp -P22 -r $CI_PROJECT_DIR/* $SSH_URL:$DEST_PATH
-    - ssh -p22 $SSH_URL "cp $DEST_PATH/src/scripts/exercise-handler.js $DEST_PATH/src/scripts/plan-handler.js $DEST_PATH/build/es6-unbundled/src/scripts/"
