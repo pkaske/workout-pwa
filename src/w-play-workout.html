@@ -47,21 +47,24 @@ Copyright (c) 2017 Peter Kaske
 
       .content {
         display: grid;
-        grid-template-columns: 40px 1fr auto;
-        grid-row-gap: 10px;
-        padding: 10px;
+        grid-template-columns: 40px 0.8fr auto;
+        padding: 0  0 10px;
         background: var(--pc-800);
       }
 
       .content > div {
-        padding-bottom: 10px;
-        border-bottom: solid 1px var(--pc-600);
+        padding: 10px;
       }
 
       .content label {
         color: var(--pc-300);
         border-bottom: none;
-        padding: 5px 0;
+        padding: 5px 10px;
+        background: transparent;
+      }
+
+      .content .column-header {
+        padding: 15px 10px 10px;
       }
 
       .set-number {
@@ -91,6 +94,20 @@ Copyright (c) 2017 Peter Kaske
       .weight-picker {
         margin-left: 10px;
       }
+
+      .content .darker {
+        background: var(--pc-850);
+      }
+
+      .content .current-record {
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+      }
+
+      .content .check-set {
+        padding: 7px 0;
+        align-self: center;
+      }
     </style>
 
     <w-slide-up-panel full id="panel">
@@ -111,16 +128,19 @@ Copyright (c) 2017 Peter Kaske
                 </template>
               </header>
               <div class="content">
-                <label></label>
-                <label class="prev-record"><span>[[localize('last-time')]]</span></label>
-                <label>[[localize('this-time')]]</label>
+                <label class="darker column-header"></label>
+                <label class="darker column-header prev-record"><span>[[localize('last-time')]]</span></label>
+                <label class="column-header">[[localize('this-time')]]</label>
+
                 <template is="dom-repeat" items="[[_getSets(ex)]]" as="set">
-                  <div>
+                  <div class="darker">
                     <div class="set-number">[[set.number]]</div>
                   </div>
-                  <div class="prev-record">
-                    
+                  
+                  <div class="darker prev-record horizontal center">
+                    <label class="text-center flex" hidden$="[[_hasRecords(ex)]]">[[localize('no-records-for-exercise')]]</label>
                   </div>
+
                   <div class="current-record">
                     <w-number-picker
                       class="reps-picker"
@@ -138,6 +158,7 @@ Copyright (c) 2017 Peter Kaske
                     <span>[[settings.weightUnit]]</span>
                   </div>
                 </template>
+
               </div>
             </section>
           </form>
@@ -162,6 +183,10 @@ Copyright (c) 2017 Peter Kaske
 
           _session: {
             type: Object
+          },
+
+          _currentSet: {
+            type: String
           }
         };
       }
