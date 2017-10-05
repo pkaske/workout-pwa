@@ -27,6 +27,7 @@ The weight is always saved in kg.
 {
   "_id": "ID",
   "name": "Exercise name",
+  "allTimePr": 22.5,
   "records": [
     {
       "date": "2017-10-02T16:32:35.907Z",

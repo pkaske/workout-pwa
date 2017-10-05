@@ -38,7 +38,7 @@ Copyright (c) 2017 Peter Kaske
 
       header iron-icon {
         color: var(--gold);
-        margin-left: 10px;
+        margin-left: 8px;
       }
 
       .pr-gold {
@@ -102,8 +102,12 @@ Copyright (c) 2017 Peter Kaske
             <section class="margin-top-25">
               <header>
                 <div>[[ex.name]]</div>
-                <div class="pr-gold">40 kg</div>
-                <iron-icon icon="wi:trophy"></iron-icon>
+                <template is="dom-if" if="[[_has('allTimePr', ex)]]">
+                  <div>
+                    <span class="pr-gold">[[_weight(ex.allTimePr, settings.weightUnit)]] [[settings.weightUnit]]</span>
+                    <iron-icon icon="wi:trophy"></iron-icon>
+                  </div>
+                </template>
               </header>
               <div class="content">
                 <label></label>
@@ -111,10 +115,10 @@ Copyright (c) 2017 Peter Kaske
                 <label>[[localize('this-time')]]</label>
                 <template is="dom-repeat" items="[[_getSets(ex)]]" as="set">
                   <div>
-                    <div class="set-number">[[set]]</div>
+                    <div class="set-number">[[set.number]]</div>
                   </div>
                   <div class="prev-record">
-
+                    
                   </div>
                   <div class="current-record">
                     <w-number-picker
@@ -174,6 +178,7 @@ Copyright (c) 2017 Peter Kaske
         this._session.exercises.forEach(ex => {
           const srcEx = exWithRecords.find(exWR => ex.id === exWR._id);
           if (srcEx) {
+            srcEx.allTimePr = 20;
             populatedList.push(Object.assign(ex, srcEx));
           }
         });
@@ -182,15 +187,21 @@ Copyright (c) 2017 Peter Kaske
       }
 
       _getSets(ex) {
-        return [...Array(ex.sets).keys()].slice(1);
-      }
+        const record = this._getLatestRecord(ex);
+        const recordedSets = record.sets || [];
 
-      _hasRecords(ex) {
-        return (ex.records || []).length > 0;
-      }
+        // We show as many sets as were recorded the last time
+        // or at lease as many as were defined in the workout plan.
+        const setsToShow = Math.max(recordedSets.length, ex.sets);
+        const data = [];
+        for (var i = 0; i < setsToShow; i++) {
+          data.push({
+            number: i + 1,
+            previous: recordedSets[i]
+          });
+        }
 
-      _getRecordsForPlan(ex) {
-        return (ex.records || []).filter(rec => rec.plan === this._session.plan._id);
+        return data;
       }
     }
 
