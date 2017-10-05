@@ -346,7 +346,7 @@ Helps to quickly select a number with just one touch.
     </div>
     <div id="areaPositive" class="val-area positive"></div>
     <div id="areaNegative" class="val-area negative"></div>
-    <div id="inputPopup">
+    <div id="inputPopup" style="display: none;">
       <div class="content">
         <button class="inc" on-tap="_increase">+</button>
         <div>
@@ -405,6 +405,7 @@ Helps to quickly select a number with just one touch.
       super();
       this._boundSnapBackEnd = this._snapBackEnd.bind(this);
       this._boundHelpAniEnd = this._helpAniEnd.bind(this);
+      this._boundAfterHideInputPopup = this._afterHideInputPopup.bind(this);
     }
 
     _handleTrack(e) {
@@ -499,11 +500,22 @@ Helps to quickly select a number with just one touch.
 
     _showInputPopup() {
       this.$.valueInput.value = this.value;
-      this.$.inputPopup.setAttribute('visible', '');
+      this.$.inputPopup.style.display = '';
+      Polymer.RenderStatus.afterNextRender(this, () => {
+        this.$.inputPopup.setAttribute('visible', '');
+      });
     }
     
     _hideInputPopup() {
+      this.$.inputPopup.addEventListener('transitionend', this._boundAfterHideInputPopup);
       this.$.inputPopup.removeAttribute('visible');
+    }
+
+    _afterHideInputPopup() {
+      this.$.inputPopup.removeEventListener('transitionend', this._boundAfterHideInputPopup);
+      Polymer.RenderStatus.afterNextRender(this.$.inputPopup, () => {
+        this.$.inputPopup.style.display = 'none';
+      });
     }
 
     _applyInputValue() {
