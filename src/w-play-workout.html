@@ -12,6 +12,7 @@ Copyright (c) 2017 Peter Kaske
 <link rel="import" href="../bower_components/iron-form/iron-form.html">
 <link rel="import" href="w-number-picker.html">
 <link rel="import" href="w-slide-up-panel.html">
+<link rel="import" href="w-set-item.html">
 <link rel="import" href="view-mixin.html">
 <link rel="import" href="helpers-mixin.html">
 <link rel="import" href="shared-styles.html">
@@ -44,70 +45,6 @@ Copyright (c) 2017 Peter Kaske
       .pr-gold {
         color: var(--gold);
       }
-
-      .content {
-        display: grid;
-        grid-template-columns: 40px 0.8fr auto;
-        padding: 0  0 10px;
-        background: var(--pc-800);
-      }
-
-      .content > div {
-        padding: 10px;
-      }
-
-      .content label {
-        color: var(--pc-300);
-        border-bottom: none;
-        padding: 5px 10px;
-        background: transparent;
-      }
-
-      .content .column-header {
-        padding: 15px 10px 10px;
-      }
-
-      .set-number {
-        color: var(--pc-600);
-        background: var(--pc-300);
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        text-align: center;
-      }
-
-      .weight-picker {
-        margin-right: 5px;
-        --w-number-picker-nob: {
-          width: auto;
-        };
-        --w-number-picker-nob-bubble: {
-          border-radius: 5px;
-        };
-      }
-
-      .reps-picker {
-        margin-right: 10px;
-      }
-
-      .weight-picker {
-        margin-left: 10px;
-      }
-
-      .content .darker {
-        background: var(--pc-850);
-      }
-
-      .content .current-record {
-        @apply --layout-horizontal;
-        @apply --layout-center-center;
-      }
-
-      .content .check-set {
-        padding: 7px 0;
-        align-self: center;
-      }
     </style>
 
     <w-slide-up-panel full id="panel">
@@ -127,36 +64,10 @@ Copyright (c) 2017 Peter Kaske
                   </div>
                 </template>
               </header>
-              <div class="content">
-                <label class="darker column-header"></label>
-                <label class="darker column-header prev-record"><span>[[localize('last-time')]]</span></label>
-                <label class="column-header">[[localize('this-time')]]</label>
+              <div class="content" on-select-set="_selectedSet" on-finish-set="_finishSet">
 
-                <template is="dom-repeat" items="[[_getSets(ex)]]" as="set">
-                  <div class="darker">
-                    <div class="set-number">[[set.number]]</div>
-                  </div>
-                  
-                  <div class="darker prev-record horizontal center">
-                    <label class="text-center flex" hidden$="[[_hasRecords(ex)]]">[[localize('no-records-for-exercise')]]</label>
-                  </div>
-
-                  <div class="current-record">
-                    <w-number-picker
-                      class="reps-picker"
-                      min="1"
-                      max="100"
-                      name="reps"></w-number-picker>
-                    <span>x</span>
-                    <w-number-picker
-                      class="weight-picker"
-                      min="0"
-                      max="9999"
-                      step="1.25"
-                      sensitivity="80"
-                      name="weight"></w-number-picker>
-                    <span>[[settings.weightUnit]]</span>
-                  </div>
+                <template is="dom-repeat" items="[[_getSets(ex)]]" as="set" index-as="setIndex">
+                  <w-set-item language="[[language]]" resources="[[resources]]" set="[[set]]" settings="[[settings]]"></w-set-item>
                 </template>
 
               </div>
@@ -177,16 +88,12 @@ Copyright (c) 2017 Peter Kaske
             type: Map
           },
 
-          resources: {
-            type: Object
-          },
-
           _session: {
             type: Object
           },
 
-          _currentSet: {
-            type: String
+          _currentSetEl: {
+            type: Object
           }
         };
       }
@@ -228,6 +135,40 @@ Copyright (c) 2017 Peter Kaske
         }
 
         return data;
+      }
+
+      _isSelectedSet(index) {
+        return index === 0;
+      }
+
+      _selectedSet(e) {
+        const setItemEl = e instanceof CustomEvent ? e.composedPath()[0] : e;
+
+        if (this._currentSetEl === setItemEl) return;
+
+        let prevSetEl = this._currentSetEl && this._currentSetEl.selected ? this._currentSetEl : null;
+        this._currentSetEl = setItemEl;
+
+        if (prevSetEl) {
+          this._listenOnce(prevSetEl, 'transitionend', e => {
+            prevSetEl = null;
+            this._currentSetEl.selected = true;
+          });
+          prevSetEl.selected = false;
+        } else {
+          this._currentSetEl.selected = true;
+        }
+      }
+
+      _finishSet(e) {
+        const setItemEl = e.composedPath()[0];
+        setItemEl.finished = true;
+        const nextSib = setItemEl.nextElementSibling;
+        if (nextSib.tagName === 'W-SET-ITEM') {
+          this._selectedSet(nextSib);
+        } else {
+          setItemEl.selected = false;
+        }
       }
     }
 

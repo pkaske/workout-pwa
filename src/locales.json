@@ -45,7 +45,8 @@
     "english": "English",
     "german": "Deutsch",
     "weight-unit": "Unit for weights",
-    "no-records-for-exercise": "---"
+    "no-records-for-exercise": "---",
+    "finish-set": "Finish"
   },
   "de": {
     "app-name": "Workout PWA",
@@ -93,6 +94,7 @@
     "english": "Englisch",
     "german": "Deutsch",
     "weight-unit": "Gewichtseinheit",
-    "no-records-for-exercise": "---"
+    "no-records-for-exercise": "---",
+    "finish-set": "Fertig"
   }
 }

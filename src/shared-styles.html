@@ -145,6 +145,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         line-height: 42px;
       }
 
+      button.lighter {
+        background: var(--pc-600);
+        outline: none;
+      }
+
+      button.lighter:focus,
+      button.lighter:active {
+        background: var(--pc-400);
+      }
+
+      button.label {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
+      button.label > iron-icon {
+        margin-right: 5px;
+      }
+
       [slot="actions"] button {
         @apply --layout-flex;
       }

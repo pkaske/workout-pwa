@@ -238,12 +238,6 @@ Manage sessions for a workout plan.
       this.__ = this.localize;
     }
 
-    connectedCallback() {
-      super.connectedCallback();
-
-      this._boundFinishRemove = this._finishRemove.bind(this);
-    }
-
     validate() {
       const nameValid = this.$.name.validate();
       const daysValid = this.$.days.validate();
@@ -304,20 +298,17 @@ Manage sessions for a workout plan.
       const type = e.detail.type === 'left' ? '100%' : '-100%';
       const item = e.target;
       item.classList.add('animated');
-      item.addEventListener('transitionend', this._boundFinishRemove);
+      this._listenOnce(item, 'transitionend', e => {
+        const item = e.target;
+        const id = item.getAttribute('data-id');
+        this._selExes = this._selExes.filter(ex => ex.id !== id);
+        item.resetAnimation();
+        item.classList.remove('animated');
+        item.style.transform = 'none';
+        item.style.opacity = 1;
+      });
       item.style.transform = `translateX(${type})`;
       item.style.opacity = 0;
-    }
-
-    _finishRemove(e) {
-      const item = e.target;
-      const id = item.getAttribute('data-id');
-      item.removeEventListener('transitionend', this._boundFinishRemove);
-      this._selExes = this._selExes.filter(ex => ex.id !== id);
-      item.resetAnimation();
-      item.classList.remove('animated');
-      item.style.transform = 'none';
-      item.style.opacity = 1;
     }
 
     _exercisesRearranged(e) {

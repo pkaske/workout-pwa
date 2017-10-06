@@ -20,7 +20,8 @@
     "paper-input": "^2.0.2",
     "paper-checkbox": "PolymerElements/paper-checkbox#^2.0.0",
     "paper-toast": "PolymerElements/paper-toast#^2.0.0",
-    "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0"
+    "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0",
+    "iron-collapse": "PolymerElements/iron-collapse#^2.0.0"
   },
   "resolutions": {
     "polymer": "^2.0.0"
