@@ -144,8 +144,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       connectedCallback() {
         super.connectedCallback();
 
-        this._boundFinishRemove = this._finishRemove.bind(this);
-
         this.$.workoutForm.addEventListener('iron-form-presubmit', e => {
           e.preventDefault();
           const plan = this.$.workoutForm.serializeForm();
@@ -213,22 +211,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       
       _triggerRemove(item) {
         item.classList.add('animated');
-        item.addEventListener('transitionend', this._boundFinishRemove);
+        this._listenOnce(item, 'transitionend', e => {
+          const item = e.target;
+          const id = item.getAttribute('data-id');
+          window.App.Plans.deleteById(id)
+            .then(() => {
+              item.resetAnimation();
+              item.classList.remove('animated');
+              item.style.transform = 'none';
+              item.style.opacity = 1;
+            });
+        });
         item.style.transform = 'translateX(100%)';
         item.style.opacity = 0;
-      }
-
-      _finishRemove(e) {
-        const item = e.target;
-        const id = item.getAttribute('data-id');
-        item.removeEventListener('transitionend', this._boundFinishRemove);
-        window.App.Plans.deleteById(id)
-          .then(() => {
-            item.resetAnimation();
-            item.classList.remove('animated');
-            item.style.transform = 'none';
-            item.style.opacity = 1;
-          });
       }
 
       _showHeadline() {

@@ -8,6 +8,7 @@ License: MIT
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="helpers-mixin.html">
 
 <!--
 # w-number-picker
@@ -361,7 +362,7 @@ Helps to quickly select a number with just one touch.
   </template>
 </dom-module>
 <script>
-  class WNumberPicker extends Polymer.GestureEventListeners(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element)) {
+  class WNumberPicker extends Polymer.GestureEventListeners(HelpersMixin(Polymer.mixinBehaviors([ Polymer.AppLocalizeBehavior ], Polymer.Element))) {
     static get is() { return 'w-number-picker'; }
 
     static get properties() {
@@ -401,13 +402,6 @@ Helps to quickly select a number with just one touch.
       };
     }
 
-    constructor() {
-      super();
-      this._boundSnapBackEnd = this._snapBackEnd.bind(this);
-      this._boundHelpAniEnd = this._helpAniEnd.bind(this);
-      this._boundAfterHideInputPopup = this._afterHideInputPopup.bind(this);
-    }
-
     _handleTrack(e) {
       switch (e.detail.state) {
         case 'start':
@@ -437,10 +431,15 @@ Helps to quickly select a number with just one touch.
         case 'end':
           if (this.tracking) {
             this.$.nob.style.transition = 'transform 120ms ease-in-out';
+            this._listenOnce(this.$.nob, 'transitionend', e => {
+              if (!this._closest(e.target, '#nob')) {
+                return;
+              }
+              this.$.nob.style.transition = '';
+            });
             this._setTracking(false);
             this.dispatchEvent(new CustomEvent('tracking-state', { detail: false, bubbles: true, composed: true }));
             this._translate3d('0px', '0px', '0px', this.$.nob);
-            this.$.nob.addEventListener('transitionend', this._boundSnapBackEnd);
           }
           break;
       }
@@ -460,14 +459,6 @@ Helps to quickly select a number with just one touch.
       this.$.areaNegative.style.left = `${rect.left - areaRadius + rect.width / 2}px`;
       this.$.areaNegative.style.top = `${rect.top + rect.height / 2}px`;
       this.$.areaNegative.style.borderRadius = `0 0 ${areaRadius}px ${areaRadius}px`;
-    }
-
-    _snapBackEnd(e) {
-      if (e.target !== this.$.nob) {
-        return;
-      }
-      this.$.nob.style.transition = '';
-      this.$.nob.removeEventListener('transitionend', this._boundSnapBackEnd);
     }
 
     _translate3d(x, y, z, node) {
@@ -507,15 +498,12 @@ Helps to quickly select a number with just one touch.
     }
     
     _hideInputPopup() {
-      this.$.inputPopup.addEventListener('transitionend', this._boundAfterHideInputPopup);
-      this.$.inputPopup.removeAttribute('visible');
-    }
-
-    _afterHideInputPopup() {
-      this.$.inputPopup.removeEventListener('transitionend', this._boundAfterHideInputPopup);
-      Polymer.RenderStatus.afterNextRender(this.$.inputPopup, () => {
-        this.$.inputPopup.style.display = 'none';
+      this._listenOnce(this.$.inputPopup, 'transitionend', e => {
+        Polymer.RenderStatus.afterNextRender(this.$.inputPopup, () => {
+          this.$.inputPopup.style.display = 'none';
+        });
       });
+      this.$.inputPopup.removeAttribute('visible');
     }
 
     _applyInputValue() {
@@ -537,16 +525,13 @@ Helps to quickly select a number with just one touch.
       this.$.rectBottom.classList.add('arrow-down');
       this.$.rectTop.classList.add('show');
       this.$.rectTop.classList.add('arrow-up');
-      this.$.rectBottom.addEventListener('animationend', this._boundHelpAniEnd);
-    }
-
-    _helpAniEnd(e) {
-      this.$.rectBottom.classList.remove('show');
-      this.$.rectBottom.classList.remove('arrow-down');
-      this.$.rectTop.classList.remove('show');
-      this.$.rectTop.classList.remove('arrow-up');
-      this.$.rectBottom.removeEventListener('animationend', this._boundHelpAniEnd);
-      this.dispatchEvent(new CustomEvent('helper-animation', { detail: false, bubbles: true, composed: true }));
+      this._listenOnce(this.$.rectBottom, 'animationend', e => {
+        this.$.rectBottom.classList.remove('show');
+        this.$.rectBottom.classList.remove('arrow-down');
+        this.$.rectTop.classList.remove('show');
+        this.$.rectTop.classList.remove('arrow-up');
+        this.dispatchEvent(new CustomEvent('helper-animation', { detail: false, bubbles: true, composed: true }));
+      });
     }
   }
 

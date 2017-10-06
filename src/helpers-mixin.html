@@ -13,6 +13,15 @@ HelpersMixin = Polymer.dedupingMixin(superClass =>  {
       });
     }
 
+    _listenOnce(node, evName, handler) {
+      handler = handler.bind(this);
+      let wrapper = (e) => {
+        handler.call(this, e);
+        node.removeEventListener(evName, wrapper);
+      }
+      node.addEventListener(evName, wrapper);
+    }
+
     /**
      * Find closest parent node matching the selector.
      * First node that's checked is `node` itself.
