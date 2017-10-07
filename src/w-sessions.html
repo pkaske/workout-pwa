@@ -86,7 +86,7 @@ Manage sessions for a workout plan.
 
     <div class="wrap" on-delete-session="_deleteSession">
       <template is="dom-repeat" items="[[sessions]]" as="item">
-        <w-session-item item="[[item]]" index="[[index]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-session-item>
+        <w-session-item id="[[item._id]]" rev="[[item._rev]]" item="[[item]]" index="[[index]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-session-item>
       </template>
 
       <div class="btn-wrap">
@@ -157,7 +157,6 @@ Manage sessions for a workout plan.
 
     ready() {
       super.ready();
-      this.__ = this.localize;
 
       this.addEventListener('select-exercises', e => {
         this._selectedExercisesCb = e.detail.cb;
@@ -188,7 +187,11 @@ Manage sessions for a workout plan.
     }
 
     _addSession() {
-      this.push('sessions', { name: this.localize('new-session-name', 'no', this.sessions.length + 1) });
+      this.push('sessions', {
+        _id: '',
+        _rev: '',
+        name: this.localize('new-session-name', 'no', this.sessions.length + 1)
+      });
       this.removeAttribute('invalid');
     }
 
@@ -205,8 +208,9 @@ Manage sessions for a workout plan.
       this.$.selExPanel.querySelectorAll('paper-checkbox').forEach(el => el.checked = false);
     }
 
-    _deleteSession(e) {
+    async _deleteSession(e) {
       const idx = e.detail;
+      await App.Plans.deleteSessionById(this.sessions[idx]._id);
       this.splice('sessions', idx, 1);
     }
   }

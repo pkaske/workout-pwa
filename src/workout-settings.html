@@ -87,8 +87,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.form.addEventListener('iron-form-presubmit', e => {
           e.preventDefault();
           var settings = this.$.form.serializeForm();
-          Promise.all(Object.entries(settings).map(setting => window.App.Settings.set(...setting)))
-            .then(() => window.App.Settings.load())
+          Promise.all(Object.entries(settings).map(setting => App.Settings.set(...setting)))
+            .then(() => App.Settings.load())
             .then(() => {
               console.info('Settings saved');
             });
@@ -97,7 +97,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _activeChanged(state) {
         if (state) {
-          window.App.Settings.load(true)
+          App.Settings.load(true)
             .then(settings => {
               this._settings = settings;
             });

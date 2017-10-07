@@ -92,25 +92,6 @@ HelpersMixin = Polymer.dedupingMixin(superClass =>  {
       return this._getRecords(ex).length > 0;
     }
 
-    _getRecordsForPlan(ex) {
-      return this._getRecords(ex).filter(rec => rec.plan === this._session.plan._id);
-    }
-
-    _sortRecordsByDate(records, direction) {
-      return records.sort((a, b) => {
-        if (direction === 'desc') {
-          return (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0);
-        } else {
-          return (a.date > b.date) ? -1 : ((a.date < b.date) ? 1 : 0);
-        }
-      });
-    }
-
-    _getLatestRecord(ex) {
-      const records = this._sortRecordsByDate(this._getRecordsForPlan(ex), 'desc');
-      return records[0] || {};
-    }
-
     _has(field, data) {
       return data && typeof data[field] !== 'undefined';
     }

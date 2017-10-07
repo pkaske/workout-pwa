@@ -78,6 +78,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       .no-upcoming-plans button {
         font-size: 14px;
       }
+
+      .todays-session header span.running-mark {
+        padding: 2px 4px;
+        background: var(--hl-400);
+        border-radius: 2px;
+        color: var(--pc-950);
+      }
     </style>
 
     <!-- List todays sessions -->
@@ -86,11 +93,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <section class="todays-session margin-top-25">
         <header class="horizontal justified">
           <div>
-            <span>[[localize('today')]]</span>
+            <span hidden$="[[session.running]]">[[localize('today')]]</span>
+            <span class="running-mark" hidden$="[[!session.running]]">[[localize('running')]]</span>
             <h2>[[session.plan.name]] - [[session.name]]</h2>
           </div>
           <div>
-            <paper-icon-button icon="wi:play-circle" on-tap="_playSession"></paper-icon-button>
+            <paper-icon-button icon="[[_headerIcon(session.running)]]" on-tap="_playSession"></paper-icon-button>
           </div>
         </header>
         <div class="content">
@@ -141,7 +149,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       static get observers() {
         return [
-          '_activePlansChanged(activePlans.*)'
+          '_updateUpcoming(activePlans, sessions)'
         ];
       }
 
@@ -151,24 +159,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // Build an array of session objects scheduled for today.
       // Each session object holds the complete plan it belongs to at the `plan` property.
-      _activePlansChanged() {
-        const list = [];
-        this.activePlans.forEach(plan => {
-          const todaysSessions = plan.sessions.filter(s => this._isToday(s));
-          todaysSessions.map(s => {
-            s.plan = plan;
-          });
-          list.push(...todaysSessions);
+      _updateUpcoming() {
+        if (!this.activePlans || !this.sessions) {
+          return;
+        }
+        const sessions = this.sessions.filter(s => this._isTodayOrRunning(s));
+        sessions.forEach(session => {
+          session.plan = this.activePlans.find(plan => plan._id === session.plan);
+          session.running = session.running || false;
         });
-        this._todaysSessions = list;
+        this._todaysSessions = sessions;
       }
 
-      _getTodaysSession(plan) {
-        return plan.sessions.find(s => this._isToday(s));
-      }
-
-      _isToday(session) {
-        return session.days.indexOf(this.today) > -1;
+      _isTodayOrRunning(session) {
+        return session.days.indexOf(this.today) > -1 || session.running;
       }
 
       _playSession(e) {
@@ -177,6 +181,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _hasUpcomingPlans() {
         return this._todaysSessions.length > 0;
+      }
+
+      _headerIcon(running) {
+        return running ? 'wi:arrow-right': 'wi:play-circle';
       }
     }
 

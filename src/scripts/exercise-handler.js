@@ -1,9 +1,11 @@
 /* eslint no-console: off */
 /* global PouchDB */
 /* global ExerciseHandler */
+/* global Utils */
 
 window.ExerciseHandler = function() {
   this._exercisedDb = new PouchDB('exercises');
+  this._exercisedSessionDb = new PouchDB('exercises');
 
   this._exercisedDb.createIndex({
     index: { fields: [ 'name' ] }
@@ -19,6 +21,9 @@ window.ExerciseHandler = function() {
       }
     });
 
+  this._exercisedDb.createIndex({
+    index: { fields: [ 'sessionRecord' ] }
+  })
 };
 
 ExerciseHandler.prototype._setupDefaultExercises = function() {
@@ -41,13 +46,40 @@ ExerciseHandler.prototype._setupDefaultExercises = function() {
     });
 };
 
+// ExerciseHandler.prototype.initRecord = function(ex, plan) {
+//   return this._exercisedDb.get(ex.id)
+//     .then(doc => {
+//       doc.records = doc.records || [];
+//       doc.records.push({
+//         date: new Date(),
+//         plan: plan._id,
+//         sets: [ ]
+//       });
+//       return this.edit(doc);
+//     });
+// };
+
+// ExerciseHandler.prototype.saveSet = function(ex, index, set) {
+//   return this._exercisedDb.get(ex.id)
+//     .then(exDoc => {
+//       exDoc.records = exDoc.records || [];
+
+//     });
+// };
+
 ExerciseHandler.prototype.create = function(doc) {
-  const exercise = doc;
-  return this._exercisedDb.post(exercise);
+  return this._exercisedDb.post(doc);
 };
 
-ExerciseHandler.prototype.edit = function(doc) {
-  return this._exercisedDb.put(doc);
+ExerciseHandler.prototype.edit = function(ex) {
+  return this._exercisedDb.get(ex._id)
+    .then(doc => {
+      if (Utils._equals(ex, doc)) {
+        return Promise.resolve();
+      } else {
+        return this._exercisedDb.put(ex);
+      }
+    })
 };
 
 ExerciseHandler.prototype.all = function() {
@@ -60,11 +92,38 @@ ExerciseHandler.prototype.all = function() {
   });
 };
 
-ExerciseHandler.prototype.findWithRecords = function(ids) {
+ExerciseHandler.prototype.getRecordsForSession = function(currentSession, previousSession) {
+  return Promise.all([
+    this._exercisedSessionDb.find({
+      selector: {
+        sessionRecord: currentSession._id
+      }
+    }),
+    !previousSession ? Promise.resolve({ docs: [] }) : 
+    this._exercisedSessionDb.find({
+      selector: {
+        sessionRecord: previousSession._id
+      }
+    })
+  ])
+  .then(result => {
+    return { current: result[0].docs, previous: result[1].docs };
+  });
+};
+
+ExerciseHandler.prototype.saveRecord = function(record) {
+  return this._exercisedSessionDb.post(record);
+};
+
+ExerciseHandler.prototype.getDataForSession = function(session) {
+  const exIds = session.exercises.map(ex => ex.id);
   return this._exercisedDb.find({
     selector: {
-      _id: { $in: ids }
+      _id: { $in: exIds }
     }
+  })
+  .then(result => {
+    return result.docs;
   });
 };
 

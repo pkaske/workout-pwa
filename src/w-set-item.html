@@ -157,9 +157,9 @@ Manages and displays a set in the workout player.
       <div class="current-record">
         <w-number-picker
           class="reps-picker"
-          min="1"
+          min="0"
           max="100"
-          name="reps"></w-number-picker>
+          value="{{_repsVal}}"></w-number-picker>
         <span>x</span>
         <w-number-picker
           class="weight-picker"
@@ -167,7 +167,7 @@ Manages and displays a set in the workout player.
           max="9999"
           step="1.25"
           sensitivity="80"
-          name="weight"></w-number-picker>
+          value="{{_weightVal}}"></w-number-picker>
         <span>[[settings.weightUnit]]</span>
       </div>
     </div>
@@ -198,6 +198,14 @@ Manages and displays a set in the workout player.
           type: Object
         },
 
+        index: {
+          type: Number
+        },
+
+        exercise: {
+          type: Object
+        },
+
         set: {
           type: Object
         },
@@ -216,14 +224,26 @@ Manages and displays a set in the workout player.
 
         settings: {
           type: Object
+        },
+
+        _repsVal: {
+          type: Number,
+          value: 0
+        },
+
+        _weightVal: {
+          type: Number,
+          value: 0
         }
       };
     }
 
-    ready() {
-      super.ready();
-      this.__ = this.localize;
-    }
+    static get observers() {
+      return [
+        '_saveWeightAndReps(_repsVal, _weightVal)',
+        '_restoreControls(exercise.currentRecord, index)'
+      ];
+    };
 
     connectedCallback() {
       super.connectedCallback();
@@ -236,13 +256,29 @@ Manages and displays a set in the workout player.
       });
     }
 
-    get value() {
-      
-    }
-
     _finishSet(e) {
       e.stopPropagation();
       this.dispatchEvent(new CustomEvent('finish-set', { detail: null, bubbles: true, composed: true }));
+    }
+
+    _saveWeightAndReps(reps, weight) {
+      if (this._dontTriggerSave) {
+        return;
+      }
+
+      const data = {
+        exercise: this.exercise,
+        index: this.index,
+        set: { weight, reps }
+      };
+      this.dispatchEvent(new CustomEvent('set-record-changed', { detail: data, bubbles: true, composed: true }));
+    }
+
+    _restoreControls(record, index) {
+      this._dontTriggerSave = true;
+      this._repsVal = this.get(`sets.${index}.reps`, record) || 0;
+      this._weightVal = this.get(`sets.${index}.weight`, record) || 0;
+      this._dontTriggerSave = false;
     }
   }
 

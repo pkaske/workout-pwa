@@ -104,11 +104,6 @@ Select workouts days.
       };
     }
 
-    ready() {
-      super.ready();
-      this.__ = this.localize;
-    }
-
     validate() {
       if (this.value.length === 0) {
         this.setAttribute('invalid', '');

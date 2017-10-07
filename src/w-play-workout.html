@@ -45,6 +45,10 @@ Copyright (c) 2017 Peter Kaske
       .pr-gold {
         color: var(--gold);
       }
+
+      .content {
+        background: var(--pc-900);
+      }
     </style>
 
     <w-slide-up-panel full id="panel">
@@ -64,10 +68,16 @@ Copyright (c) 2017 Peter Kaske
                   </div>
                 </template>
               </header>
-              <div class="content" on-select-set="_selectedSet" on-finish-set="_finishSet">
+              <div class="content" on-select-set="_selectedSet" on-finish-set="_finishSet" on-set-record-changed="_saveSetRecord">
 
                 <template is="dom-repeat" items="[[_getSets(ex)]]" as="set" index-as="setIndex">
-                  <w-set-item language="[[language]]" resources="[[resources]]" set="[[set]]" settings="[[settings]]"></w-set-item>
+                  <w-set-item
+                    language="[[language]]"
+                    resources="[[resources]]"
+                    exercise="[[ex]]"
+                    index="[[setIndex]]"
+                    set="[[set]]"
+                    settings="[[settings]]"></w-set-item>
                 </template>
 
               </div>
@@ -98,39 +108,56 @@ Copyright (c) 2017 Peter Kaske
         };
       }
 
-      start(session) {
+      async start(session) {
         this._session = session;
         this.$.panel.show();
-        this._getExercises();
-      }
 
-      async _getExercises() {
-        const result = await window.App.Exercises.findWithRecords(this._session.exercises.map(ex => ex.id));
-        const exWithRecords = result.docs;
-        const populatedList = [];
+        // 1. Start a session recored if not already running.
+        if (!this._session.running) {
+          // Start a new session and save the new record id in the session.
+          // Additionally set the running flag to true.
+          const result = await App.Plans.startSessionRecord(this._session, this._session.plan);
+          await App.Plans.startSession(this._session, result.id);
+          this._session.currentRecord = result.id;
+        }
+
+        // 2. Get previous and current session record.
+        const sessionRecords = await App.Plans.getSessionRecords(session);
+        this._session.currentRecord = sessionRecords.current;
+
+        // 3. Get previous and current exercise record for all exercises.
+        const exerciseRecords = await App.Exercises.getRecordsForSession(sessionRecords.current, sessionRecords.previous);
+
+        // 4. Get details for all exercises.
+        const exerciseDetails = await App.Exercises.getDataForSession(this._session);
+
+        // 5. Inject the records into the exercises.
         this._session.exercises.forEach(ex => {
-          const srcEx = exWithRecords.find(exWR => ex.id === exWR._id);
-          if (srcEx) {
-            srcEx.allTimePr = 20;
-            populatedList.push(Object.assign(ex, srcEx));
-          }
+          const details = exerciseDetails.find(e => ex.id === e._id);
+          ex.currentRecord = exerciseRecords.current.find(rec => rec.exercise === ex.id) || {};
+          ex.previousRecord = exerciseRecords.previous.find(rec => rec.exercise === ex.id) || {};
+          ex = Object.assign(ex, details);
         });
 
-        this._exercises = populatedList;
+        this._exercises = this._session.exercises;
+        // TODO(pk): Add proper error handling.
+        // Promise.all(
+        //   this._session.exercises.map(
+        //     ex => App.Exercises.initRecord(ex, this._session.plan)
+        //   )
+        // )
+        // .then(() => this._getExercises())
+        // .catch(err => console.error(err));
       }
 
       _getSets(ex) {
-        const record = this._getLatestRecord(ex);
-        const recordedSets = record.sets || [];
-
         // We show as many sets as were recorded the last time
         // or at lease as many as were defined in the workout plan.
-        const setsToShow = Math.max(recordedSets.length, ex.sets);
+        const setsToShow = Math.max((ex.previousRecord.sets || []).length, ex.sets);
         const data = [];
         for (var i = 0; i < setsToShow; i++) {
           data.push({
-            number: i + 1,
-            previous: recordedSets[i]
+            number: i + 1
           });
         }
 
@@ -169,6 +196,25 @@ Copyright (c) 2017 Peter Kaske
         } else {
           setItemEl.selected = false;
         }
+      }
+
+      async _saveSetRecord(e) {
+        const data = e.detail;
+        let exRec = data.exercise.currentRecord;
+
+        if (!exRec._id) {
+          exRec = {
+            exercise: data.exercise._id,
+            sessionRecord: this._session.currentRecord._id,
+            plan: this._session.plan._id,
+            sets: []
+          };
+        }
+
+        exRec.sets[data.index] = Object.assign(exRec.sets[data.index] || {}, data.set);
+        const result = await App.Exercises.saveRecord(exRec);
+        exRec._id = result.id;
+        exRec._rev = result.rev;
       }
     }
 

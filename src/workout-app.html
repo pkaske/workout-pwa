@@ -27,6 +27,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="workout-icons.html">
 <link rel="import" href="shared-styles.html">
 
+<script src="scripts/utils.js"></script>
 <script src="scripts/exercise-handler.js"></script>
 <script src="scripts/plan-handler.js"></script>
 <script src="scripts/settings-handler.js"></script>
@@ -35,7 +36,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <template>
     <style include="shared-styles">
       :host {
-        --pc-900: #2B2546;
+        --pc-950: #2B2546;
+        --pc-900: #383153;
         --pc-850: #3E3560;
         --pc-800: #433B65;
         --pc-600: #54497C;
@@ -73,7 +75,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       #drawer {
         --app-drawer-content-container: {
-          background: var(--pc-900);
+          background: var(--pc-950);
         };
       }
 
@@ -165,6 +167,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             exercises="[[_exercises]]"
             exercises-map="[[_exercisesMap]]"
             active-plans="[[_activePlans]]"
+            sessions="[[_sessions]]"
             name="home"
             settings="[[_settings]]"></workout-home>
           <workout-plans
@@ -286,6 +289,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         document.addEventListener('plans-changed', e => {
           this._plans = e.detail.docs;
           this._activePlans = this._plans.filter(plan => plan.active);
+        });
+
+        document.addEventListener('sessions-changed', e => {
+          this._sessions = e.detail.docs;
         });
 
         document.addEventListener('settings-loaded', e => {

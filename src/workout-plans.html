@@ -84,7 +84,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <paper-toggle-button name="active" checked="[[_selPlan.active]]"></paper-toggle-button>
             </div>
             <div class="margin-top-25">
-              <w-sessions name="sessions" sessions="[[_selPlan.sessions]]" exercises="[[exercises]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-sessions>
+              <w-sessions name="sessions" sessions="[[_sessions]]" exercises="[[exercises]]" exercises-map="[[exercisesMap]]" resources="[[resources]]"></w-sessions>
             </div>
           </form>
         </iron-form>
@@ -130,6 +130,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             type: Object,
             value: function() {
               return {};
+            },
+            observer: '_getSessions'
+          },
+
+          _sessions: {
+            type: Array,
+            value: function() {
+              return [];
             }
           }
         };
@@ -148,10 +156,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           e.preventDefault();
           const plan = this.$.workoutForm.serializeForm();
           this.$.workoutPanel.hide();
+          
           if (plan._id) {
-            window.App.Plans.edit(plan).then(() => this._resetWorkoutForm())
+            const sessions = plan.sessions;
+            delete plan.sessions;
+
+            const promises = [
+              App.Plans.edit(plan),
+              ...sessions.map(session => {
+                session.plan = plan._id;
+                if (session._id) {
+                  return App.Plans.editSession(session);
+                } else {
+                  return App.Plans.createSession(session);
+                }
+              })
+            ];
+
+            Promise.all(promises).then(() => this._resetWorkoutForm());
           } else {
-            window.App.Plans.create(plan).then(() => this._resetWorkoutForm())
+            App.Plans.create(plan).then(() => this._resetWorkoutForm())
           }
         });
 
@@ -214,7 +238,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._listenOnce(item, 'transitionend', e => {
           const item = e.target;
           const id = item.getAttribute('data-id');
-          window.App.Plans.deleteById(id)
+          App.Plans.deleteById(id)
             .then(() => {
               item.resetAnimation();
               item.classList.remove('animated');
@@ -228,6 +252,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _showHeadline() {
         return this._selPlan._id ? this.localize('edit-workout-headline') : this.localize('new-workout-headline')
+      }
+
+      async _getSessions() {
+        if (this._selPlan._id) {
+          this._sessions = await App.Plans.getSessions(this._selPlan);
+        } else {
+          this._sessions = [];
+        }
       }
     }
 

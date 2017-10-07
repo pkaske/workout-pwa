@@ -337,11 +337,11 @@ Helps to quickly select a number with just one touch.
 
     <div id="nob" on-track="_handleTrack" on-tap="_nobTap">
       <div id="rectTop"></div>
-      <div class="nob-bubble"><div>[[value]]</div></div>
+      <div class="nob-bubble"><div>[[_internalVal]]</div></div>
       <div id="rectBottom"></div>
       <div id="info">
         <div class="info-bubble">
-          <div>[[value]]</div>
+          <div>[[_internalVal]]</div>
         </div>
       </div>
     </div>
@@ -368,9 +368,10 @@ Helps to quickly select a number with just one touch.
     static get properties() {
       return {
         value: {
-          type: Array,
+          type: Number,
           value: 0,
-          notify: true
+          notify: true,
+          observer: '_updateInternalVal'
         },
 
         min: {
@@ -398,6 +399,12 @@ Helps to quickly select a number with just one touch.
           value: false,
           readOnly: true,
           reflectToAttribute: true
+        },
+
+        // Used to prevent spamming the value property.
+        _internalVal: {
+          type: Number,
+          value: 0
         }
       };
     }
@@ -409,7 +416,7 @@ Helps to quickly select a number with just one touch.
           const rect = this.getBoundingClientRect();
           this._stylePositiveAreaIndicator(rect, areaRadius);
           this._styleNegativeAreaIndicator(rect, areaRadius);
-          this._startingOffset = this.value;
+          this._startingOffset = this._internalVal;
           this._setTracking(true);
           this.dispatchEvent(new CustomEvent('tracking-state', { detail: true, bubbles: true, composed: true }));
           this._translate3d(e.detail.dx + 'px', e.detail.dy + 'px', '0px', this.$.nob);
@@ -424,7 +431,7 @@ Helps to quickly select a number with just one touch.
               this.removeAttribute('negative');
             }
             var val = this._startingOffset + (Math.ceil(dist / this.sensitivity) * dir * this.step);
-            this.value = this._sanitizeValue(val);
+            this._internalVal = this._sanitizeValue(val);
             this._translate3d(e.detail.dx + 'px', e.detail.dy + 'px', '0px', this.$.nob);
           }
           break;
@@ -437,6 +444,7 @@ Helps to quickly select a number with just one touch.
               }
               this.$.nob.style.transition = '';
             });
+            this.value = this._internalVal;
             this._setTracking(false);
             this.dispatchEvent(new CustomEvent('tracking-state', { detail: false, bubbles: true, composed: true }));
             this._translate3d('0px', '0px', '0px', this.$.nob);
@@ -490,7 +498,7 @@ Helps to quickly select a number with just one touch.
     }
 
     _showInputPopup() {
-      this.$.valueInput.value = this.value;
+      this.$.valueInput.value = this._internalVal;
       this.$.inputPopup.style.display = '';
       Polymer.RenderStatus.afterNextRender(this, () => {
         this.$.inputPopup.setAttribute('visible', '');
@@ -507,7 +515,7 @@ Helps to quickly select a number with just one touch.
     }
 
     _applyInputValue() {
-      this.value = this._sanitizeValue(this.$.valueInput.value);
+      this.value = this._internalVal = this._sanitizeValue(this.$.valueInput.value);
       this._hideInputPopup();
     }
 
@@ -532,6 +540,10 @@ Helps to quickly select a number with just one touch.
         this.$.rectTop.classList.remove('arrow-up');
         this.dispatchEvent(new CustomEvent('helper-animation', { detail: false, bubbles: true, composed: true }));
       });
+    }
+
+    _updateInternalVal() {
+      this._internalVal = this.value;
     }
   }
 
