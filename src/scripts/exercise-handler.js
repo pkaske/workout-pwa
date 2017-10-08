@@ -5,7 +5,7 @@
 
 window.ExerciseHandler = function() {
   this._exercisedDb = new PouchDB('exercises');
-  this._exercisedSessionDb = new PouchDB('exercises');
+  this._exercisedSessionDb = new PouchDB('exercises_records');
 
   this._exercisedDb.createIndex({
     index: { fields: [ 'name' ] }

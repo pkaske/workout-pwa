@@ -49,13 +49,34 @@ Copyright (c) 2017 Peter Kaske
       .content {
         background: var(--pc-900);
       }
+
+      #notesPanel textarea{
+        box-sizing: border-box;
+        width: 100%;
+        border-style: none;
+        padding: 10px;
+        color: var(--pc-900);
+        background: var(--pc-100);
+        outline: none;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        font-size: 16px;
+      }
+
+      #notesFrm form {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        @apply --layout-vertical;
+      }
     </style>
 
     <w-slide-up-panel full id="panel">
       <paper-icon-button icon="wi:arrow-back" slot="header-left" dismiss-panel></paper-icon-button>
       <h1 slot="header">[[_session.name]]</h1>
 
-      <template is="dom-repeat" items="[[_exercises]]" as="ex">
+      <template id="exerciseList" is="dom-repeat" items="[[_exercises]]" as="ex">
         <iron-form>
           <form>
             <section class="margin-top-25">
@@ -68,7 +89,7 @@ Copyright (c) 2017 Peter Kaske
                   </div>
                 </template>
               </header>
-              <div class="content" on-select-set="_selectedSet" on-finish-set="_finishSet" on-set-record-changed="_saveSetRecord">
+              <div class="content" on-select-set="_selectSet" on-finish-set="_finishSet" on-set-record-changed="_saveSetRecord">
 
                 <template is="dom-repeat" items="[[_getSets(ex)]]" as="set" index-as="setIndex">
                   <w-set-item
@@ -85,6 +106,27 @@ Copyright (c) 2017 Peter Kaske
           </form>
         </iron-form>
       </template>
+    </w-slide-up-panel>
+
+    <w-slide-up-panel full id="notesPanel">
+      <h3 slot="header">[[localize('write-a-note')]]</h3>
+      <iron-form id="notesFrm">
+        <form>
+          <input type="hidden" name="_id" value="[[_notePanelData._id]]">
+          <input type="hidden" name="type" value="[[_notePanelData.type]]">
+          <textarea name="note" class="flex" value="[[_notePanelData.note]]"></textarea>
+          <div class="horizontal justified">
+            <button class="flex lighter label" dismiss-panel>
+              <iron-icon icon="wi:close-circle"></iron-icon>
+              [[localize('cancel')]]
+            </button>
+            <button class="flex lighter label" on-tap="_submitNotesPanel">
+              <iron-icon icon="wi:check"></iron-icon>
+              [[localize('save')]]
+            </button>
+          </div>
+        </form>
+      </iron-form>
     </w-slide-up-panel>
   </template>
 
@@ -108,7 +150,14 @@ Copyright (c) 2017 Peter Kaske
         };
       }
 
+      connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener('show-notes-panel', e => this._showNotesPanel(e));
+      }
+
       async start(session) {
+        this._reset();
+
         this._session = session;
         this.$.panel.show();
 
@@ -140,14 +189,18 @@ Copyright (c) 2017 Peter Kaske
         });
 
         this._exercises = this._session.exercises;
-        // TODO(pk): Add proper error handling.
-        // Promise.all(
-        //   this._session.exercises.map(
-        //     ex => App.Exercises.initRecord(ex, this._session.plan)
-        //   )
-        // )
-        // .then(() => this._getExercises())
-        // .catch(err => console.error(err));
+        
+        Polymer.RenderStatus.afterNextRender(this, function() {
+          this._selectNextOpenSet();
+        });
+      }
+
+      _reset() {
+        this._currentSetEl = null;
+        const setItems = this.shadowRoot.querySelectorAll('w-set-item');
+        for (const item of setItems) {
+          item.selected = false;
+        }
       }
 
       _getSets(ex) {
@@ -168,7 +221,16 @@ Copyright (c) 2017 Peter Kaske
         return index === 0;
       }
 
-      _selectedSet(e) {
+      _selectNextOpenSet() {
+        const setItems = this.shadowRoot.querySelectorAll('w-set-item');
+        for (const item of setItems) {
+          if (!item.finished) {
+            return this._selectSet(item);
+          }
+        }
+      }
+
+      _selectSet(e) {
         const setItemEl = e instanceof CustomEvent ? e.composedPath()[0] : e;
 
         if (this._currentSetEl === setItemEl) return;
@@ -192,29 +254,45 @@ Copyright (c) 2017 Peter Kaske
         setItemEl.finished = true;
         const nextSib = setItemEl.nextElementSibling;
         if (nextSib.tagName === 'W-SET-ITEM') {
-          this._selectedSet(nextSib);
+          this._selectSet(nextSib);
         } else {
           setItemEl.selected = false;
         }
       }
 
       async _saveSetRecord(e) {
-        const data = e.detail;
-        let exRec = data.exercise.currentRecord;
+        const exercise = e.model.ex;
+        const index = e.target.index;
+        const set = e.detail;
+        let exRec = exercise.currentRecord;
 
         if (!exRec._id) {
           exRec = {
-            exercise: data.exercise._id,
+            exercise: exercise._id,
             sessionRecord: this._session.currentRecord._id,
             plan: this._session.plan._id,
             sets: []
           };
         }
 
-        exRec.sets[data.index] = Object.assign(exRec.sets[data.index] || {}, data.set);
+        exRec.sets[index] = Object.assign(exRec.sets[index] || {}, set);
         const result = await App.Exercises.saveRecord(exRec);
         exRec._id = result.id;
         exRec._rev = result.rev;
+        e.model.set('ex.currentRecord', exRec);
+      }
+
+      _showNotesPanel(e) {
+        this.$.notesPanel.show();
+        this._notesPanelData = e.detail;
+        Polymer.RenderStatus.afterNextRender(this, function() {
+          this.$.notesPanel.querySelector('textarea').focus();
+        });
+      }
+
+      _submitNotesPanel(e) {
+        const data = this.$.notesFrm.serializeForm();
+        
       }
     }
 

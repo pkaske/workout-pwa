@@ -30,7 +30,7 @@ Manages and displays a set in the workout player.
     <style include="shared-styles">
       :host {
         display: block;
-        transition: border-color 400ms ease-in-out, background-color 800ms ease-in-out;
+        transition: border-color 200ms ease-in-out, background-color 400ms ease-in-out;
         border-top: solid 1px;
         border-bottom: solid 1px;
         border-left: solid 3px;
@@ -173,14 +173,16 @@ Manages and displays a set in the workout player.
     </div>
     <iron-collapse opened="[[selected]]">
       <div class="set-actions horizontal justified">
-        <div></div>
+        <button class="lighter label" on-tap="_requestNotesPanel">
+          <iron-icon icon="wi:pencil-circle"></iron-icon>
+          [[localize('write-a-node')]]
+        </button>
         <button class="lighter label" on-tap="_finishSet">
           <iron-icon icon="wi:check"></iron-icon>
           [[localize('finish-set')]]
         </button>
       </div>
     </iron-collapse>
-
   </template>
 </dom-module>
 <script>
@@ -241,7 +243,7 @@ Manages and displays a set in the workout player.
     static get observers() {
       return [
         '_saveWeightAndReps(_repsVal, _weightVal)',
-        '_restoreControls(exercise.currentRecord, index)'
+        '_restoreState(exercise.currentRecord, index)'
       ];
     };
 
@@ -258,6 +260,7 @@ Manages and displays a set in the workout player.
 
     _finishSet(e) {
       e.stopPropagation();
+      this.dispatchEvent(new CustomEvent('set-record-changed', { detail: { done: new Date().toISOString() }, bubbles: true, composed: true }));
       this.dispatchEvent(new CustomEvent('finish-set', { detail: null, bubbles: true, composed: true }));
     }
 
@@ -266,19 +269,21 @@ Manages and displays a set in the workout player.
         return;
       }
 
-      const data = {
-        exercise: this.exercise,
-        index: this.index,
-        set: { weight, reps }
-      };
+      const data = { weight, reps };
       this.dispatchEvent(new CustomEvent('set-record-changed', { detail: data, bubbles: true, composed: true }));
     }
 
-    _restoreControls(record, index) {
+    _restoreState(record, index) {
       this._dontTriggerSave = true;
-      this._repsVal = this.get(`sets.${index}.reps`, record) || 0;
-      this._weightVal = this.get(`sets.${index}.weight`, record) || 0;
+      const setState = this.get(`sets.${index}`, record) || {};
+      this._repsVal = setState.reps || 0;
+      this._weightVal = setState.weight || 0;
+      this.finished = Boolean(setState.done);
       this._dontTriggerSave = false;
+    }
+
+    _requestNotesPanel() {
+      this.dispatchEvent(new CustomEvent('show-notes-panel', { detail: null, bubbles: true, composed: true }));
     }
   }
 

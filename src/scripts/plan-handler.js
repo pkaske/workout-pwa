@@ -149,6 +149,7 @@ PlanHandler.prototype.editSession = function(session) {
       if (Utils._equals(doc, session)) {
         return Promise.resolve();
       } else {
+        session = Object.assign(doc, session);
         return this._sessionDb.post(session);
       }
     });

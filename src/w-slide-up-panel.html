@@ -58,6 +58,7 @@ Displays a panel that slide up from the bottom.
       }
 
       .content {
+        position: relative; /* So slotted children can use absolute positioning if needed. */
         overflow-y: auto;
         background: var(--pc-950);
         @apply --layout-flex;
