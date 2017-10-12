@@ -40,7 +40,7 @@ Manages and displays a set in the workout player.
 
       :host([selected]) {
         border-color: var(--pc-850);
-        background-color: var(--pc-800);
+        background-color: var(--pc-400);
         border-left-color: var(--hl-400);
       }
 
@@ -63,12 +63,21 @@ Manages and displays a set in the workout player.
         padding: 15px;
       }
 
+      :host([has-notes]) .set-details {
+        padding-bottom: 5px;
+      }
+
+      .set-notes {
+        padding: 0 15px 10px 15px;;
+        font-size: 14px;
+      }
+
       :host([selected]) .darker {
         background: var(--hl-700);
       }
 
       .discreet-text {
-        color: var(--pc-300);
+        color: var(--pc-100);
         font-size: 12px;
       }
 
@@ -171,6 +180,12 @@ Manages and displays a set in the workout player.
         <span>[[settings.weightUnit]]</span>
       </div>
     </div>
+
+    <!-- Display set notes here if present -->
+    <div class="set-notes" hidden$="[[!_notesVal]]">
+      [[_notesVal]]
+    </div>
+
     <iron-collapse opened="[[selected]]">
       <div class="set-actions horizontal justified">
         <button class="lighter label" on-tap="_requestNotesPanel">
@@ -236,13 +251,18 @@ Manages and displays a set in the workout player.
         _weightVal: {
           type: Number,
           value: 0
+        },
+
+        _notesVal: {
+          type: String,
+          value: ''
         }
       };
     }
 
     static get observers() {
       return [
-        '_saveWeightAndReps(_repsVal, _weightVal)',
+        '_saveSetRecord(_repsVal, _weightVal, _notesVal)',
         '_restoreState(exercise.currentRecord, index)'
       ];
     };
@@ -264,12 +284,18 @@ Manages and displays a set in the workout player.
       this.dispatchEvent(new CustomEvent('finish-set', { detail: null, bubbles: true, composed: true }));
     }
 
-    _saveWeightAndReps(reps, weight) {
+    _saveSetRecord(reps, weight, notes) {
+      if (notes) {
+        this.setAttribute('has-notes', '');
+      } else {
+        this.removeAttribute('has-notes');
+      }
+
       if (this._dontTriggerSave) {
         return;
       }
 
-      const data = { weight, reps };
+      const data = { weight, reps, notes };
       this.dispatchEvent(new CustomEvent('set-record-changed', { detail: data, bubbles: true, composed: true }));
     }
 
@@ -278,12 +304,17 @@ Manages and displays a set in the workout player.
       const setState = this.get(`sets.${index}`, record) || {};
       this._repsVal = setState.reps || 0;
       this._weightVal = setState.weight || 0;
+      this._notesVal = setState.notes || '';
       this.finished = Boolean(setState.done);
       this._dontTriggerSave = false;
     }
 
     _requestNotesPanel() {
-      this.dispatchEvent(new CustomEvent('show-notes-panel', { detail: null, bubbles: true, composed: true }));
+      this.dispatchEvent(new CustomEvent('show-notes-panel', { detail: { notes: this._notesVal }, bubbles: true, composed: true }));
+    }
+
+    notesSubmitted(data) {
+      this._notesVal = data.notes;
     }
   }
 
